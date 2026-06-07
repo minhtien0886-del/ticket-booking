@@ -1,0 +1,132 @@
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+      xmlns:w="urn:schemas-microsoft-com:office:word"
+      xmlns="http://www.w3.org/TR/REC-html40">
+<head>
+<meta charset="utf-8">
+<title>Tài Liệu Mô Tả Hệ Thống FCM-ERP</title>
+<style>
+    body { font-family: 'Times New Roman', serif; line-height: 1.5; font-size: 14pt; }
+    h1 { color: #2E74B5; text-align: center; font-size: 24pt; margin-bottom: 20px; }
+    h2 { color: #2E74B5; border-bottom: 1px solid #2E74B5; padding-bottom: 5px; font-size: 18pt; margin-top: 30px; }
+    h3 { color: #1F4D78; font-size: 16pt; margin-top: 20px; }
+    p { margin: 10px 0; text-align: justify; }
+    ul, ol { margin: 10px 0 10px 20px; }
+    table { width: 100%; border-collapse: collapse; margin: 15px 0; }
+    th, td { border: 1px solid #000; padding: 8px; text-align: left; }
+    th { background-color: #D9E1F2; color: #000; font-weight: bold; text-align: center; }
+</style>
+</head>
+<body>
+
+<h1>TÀI LIỆU MÔ TẢ HỆ THỐNG<br>FCM-ERP</h1>
+<p style="text-align: center; font-style: italic;">Football Club Management & High-Concurrency Ticketing ERP System</p>
+<hr>
+
+<h2>1. Tổng Quan Dự Án</h2>
+<p><strong>FCM-ERP</strong> là một hệ thống phần mềm quản trị nguồn lực doanh nghiệp (ERP) cấp độ sản xuất (production-grade), được thiết kế đặc thù cho việc quản lý hoạt động của một Câu lạc bộ Bóng đá. Hệ thống được xây dựng hoàn toàn bằng ngôn ngữ <strong>Java 8 thuần túy</strong> mà không phụ thuộc vào bất kỳ framework bên ngoài nào (No external frameworks).</p>
+<p>Hệ thống cung cấp một giải pháp toàn diện bao gồm:</p>
+<ul>
+    <li>Quản lý nhân sự (Cầu thủ, Ban huấn luyện, Nhân viên).</li>
+    <li>Quản lý sơ đồ ghế ngồi và cơ sở vật chất sân vận động.</li>
+    <li>Hệ thống bán vé xử lý đồng thời mức độ cao (High-Concurrency Ticketing).</li>
+    <li>Quản lý cửa hàng bán lẻ (Merchandise) và tài chính.</li>
+</ul>
+
+<h3>1.1. Mục Tiêu Hiệu Suất</h3>
+<ul>
+    <li>Quy mô mã nguồn: Hơn 10,000 dòng code Java chuẩn.</li>
+    <li>Khả năng lưu trữ: Cơ sở dữ liệu phân tán thông qua 16 tệp CSV.</li>
+    <li>Hiệu năng: Đạt tốc độ truy vấn đọc dữ liệu (Read Performance) dưới 500ms cho tập dữ liệu hơn 10,000 bản ghi.</li>
+    <li>Khả năng mở rộng: Hỗ trợ giả lập xử lý đồng thời hơn 1,000 luồng (Threads) đặt vé cùng lúc.</li>
+</ul>
+
+<h2>2. Kiến Trúc Phần Mềm</h2>
+<p>Hệ thống được tổ chức theo mô hình kiến trúc đa tầng (Multi-tier Architecture), tuân thủ nguyên lý thiết kế hướng đối tượng (OOP) và SOLID.</p>
+
+<h3>2.1. Cấu Trúc Thành Phần (Package Structure)</h3>
+<ul>
+    <li><strong>model/</strong>: Định nghĩa các thực thể miền dữ liệu (Domain Entities), Enums và các cỗ máy trạng thái (State Machines).</li>
+    <li><strong>repository/</strong>: Lớp giao tiếp dữ liệu (Data Access Layer), quản lý thao tác I/O với 16 tệp CSV thông qua Generic.</li>
+    <li><strong>service/</strong>: Lớp nghiệp vụ cốt lõi (Business Logic), thực thi các quy tắc nghiệp vụ phức tạp.</li>
+    <li><strong>controller/</strong>: Lớp điều khiển, tiếp nhận các yêu cầu từ giao diện người dùng và điều hướng dữ liệu.</li>
+    <li><strong>security/</strong>: Tầng bảo mật, đảm nhận phân quyền (RBAC), quản lý phiên đăng nhập và xác thực (SHA-256).</li>
+    <li><strong>simulator/</strong>: Khối động cơ giả lập (Load Testing Engine) để kiểm thử mức độ chịu tải.</li>
+    <li><strong>util/</strong>: Thư viện tiện ích dùng chung (Data Generator, cơ chế Write-Ahead Logging).</li>
+    <li><strong>ui/</strong>: Giao diện dòng lệnh (CLI Menu System).</li>
+</ul>
+
+<h3>2.2. Kiến Trúc Dữ Liệu</h3>
+<p>Hệ thống sử dụng 16 tệp CSV làm nơi lưu trữ bền vững (Persistence Layer), bao gồm:</p>
+<ol>
+    <li><em>accounts.csv</em>: Tài khoản người dùng</li>
+    <li><em>fans.csv</em>: Hồ sơ người hâm mộ</li>
+    <li><em>players.csv, staff.csv</em>: Hồ sơ nhân sự</li>
+    <li><em>matches.csv, league_table.csv, team_lineups.csv</em>: Dữ liệu giải đấu và trận đấu</li>
+    <li><em>stadium_seats.csv, tickets.csv</em>: Quản lý ghế ngồi và vé</li>
+    <li><em>transactions.csv, salaries.csv</em>: Dữ liệu tài chính, lương thưởng</li>
+    <li><em>merchandise.csv, cart_items.csv</em>: Hàng hóa và giỏ hàng</li>
+    <li><em>attendance_records.csv, loyalty_points.csv</em>: Ghi nhận chuyên cần và điểm thành viên</li>
+    <li><em>audit_log.csv</em>: Nhật ký kiểm toán hệ thống</li>
+</ol>
+
+<h2>3. Mô Hình Bảo Mật và Phân Quyền (RBAC)</h2>
+<p>Hệ thống tích hợp một mô hình bảo mật mạnh mẽ (Role-Based Access Control) để kiểm soát quyền truy cập tới các module khác nhau.</p>
+<table>
+    <tr>
+        <th>Vai Trò (Role)</th>
+        <th>Chức Năng Chính</th>
+    </tr>
+    <tr>
+        <td><strong>ADMIN</strong></td>
+        <td>Có toàn quyền kiểm soát hệ thống (ALL PERMISSIONS).</td>
+    </tr>
+    <tr>
+        <td><strong>HLV_TRUONG</strong></td>
+        <td>Cập nhật chỉ số trực tiếp (UPDATE_LIVE_STATS), xem sơ đồ sân.</td>
+    </tr>
+    <tr>
+        <td><strong>GIAM_DOC_NHAN_SU</strong></td>
+        <td>Quản lý nhân sự, quản lý lương thưởng, sơ đồ sân.</td>
+    </tr>
+    <tr>
+        <td><strong>GIAM_DOC_TAI_CHINH</strong></td>
+        <td>Truy cập báo cáo tài chính, quản trị nhân lực.</td>
+    </tr>
+    <tr>
+        <td><strong>TRONG_TAI</strong></td>
+        <td>Quản lý giải đấu, cập nhật kết quả trận đấu.</td>
+    </tr>
+    <tr>
+        <td><strong>QUAN_LY_QUAY</strong></td>
+        <td>Xử lý quá trình mua bán vé.</td>
+    </tr>
+    <tr>
+        <td><strong>FAN</strong></td>
+        <td>Tra cứu lịch thi đấu, xem sơ đồ ghế ngồi, mua vé và hàng hóa.</td>
+    </tr>
+</table>
+
+<h2>4. Thuật Toán Xử Lý Đồng Thời (Concurrency Management)</h2>
+<p>Điểm nhấn kỹ thuật lớn nhất của hệ thống là khả năng giải quyết bài toán tranh chấp dữ liệu (Race condition) và lỗi đặt vé trùng lặp (Double-booking) thông qua 4 cơ chế quản lý khóa (Locking Mechanisms):</p>
+<ul>
+    <li><strong>NO_LOCK:</strong> Cơ chế gốc (Baseline) không sử dụng khóa, mục đích dùng làm đối chứng mức độ lỗi trong quá trình stress-test.</li>
+    <li><strong>FILE_LOCK (OS-Level):</strong> Sử dụng Java NIO (<code>FileChannel.lock()</code>) để khóa tệp tin vật lý từ mức hệ điều hành, ngăn ngừa xung đột đa tiến trình.</li>
+    <li><strong>SYNCHRONIZED (JVM Monitor):</strong> Triển khai khóa nội tại của Java (Intrinsic Lock) trên tầng bộ nhớ, đảm bảo xếp hàng tuần tự tuyệt đối (100% an toàn) nhưng ảnh hưởng băng thông (Throughput).</li>
+    <li><strong>OPTIMISTIC_LOCKING (CAS):</strong> Giải pháp cấp cao sử dụng phiên bản bản ghi (Version-based Compare-and-Swap) kết hợp với thuật toán thử lại theo cấp số nhân (Exponential Back-off Retry), tối ưu hóa hiệu suất giao dịch tại các thời điểm tải thông thường.</li>
+</ul>
+
+<h2>5. Cơ Chế Toàn Vẹn Dữ Liệu (Write-Ahead Logging - WAL)</h2>
+<p>Để ngăn chặn tham nhũng dữ liệu (Data Corruption) do lỗi mất điện, OOM (Out Of Memory) hoặc Crash hệ thống khi đang lưu file CSV, FCM-ERP tự xây dựng cơ chế phục hồi <strong>Write-Ahead Logging (WAL)</strong>:</p>
+<ol>
+    <li>Hệ thống khóa file độc quyền bằng <code>.lock</code>.</li>
+    <li>Ghi dữ liệu nguyên tử vào một tệp tin tạm <code>.tmp</code> thay vì ghi trực tiếp vào tệp gốc.</li>
+    <li>Sao lưu tệp gốc sang định dạng <code>.bak</code>.</li>
+    <li>Sử dụng tính năng đổi tên nguyên tử (Atomic Rename) của hệ điều hành để ghi đè tệp <code>.tmp</code> thành tệp chính (CSV).</li>
+    <li>Quá trình khởi động sẽ luôn dò tìm và tự động khôi phục dữ liệu từ <code>.bak</code> nếu phát hiện cờ lỗi trong lần tắt máy trước.</li>
+</ol>
+
+<h2>6. Tổng Kết</h2>
+<p>Hệ thống FCM-ERP là một mô hình ứng dụng doanh nghiệp chuẩn mực, cho thấy khả năng khai thác tối đa sức mạnh của lõi ngôn ngữ Java trong việc quản lý cấu trúc dữ liệu, tối ưu hóa thuật toán I/O, và thiết kế các kỹ thuật đồng bộ hóa luồng (Threading) phức tạp mà không bị phụ thuộc vào các công cụ bên thứ ba.</p>
+
+</body>
+</html>

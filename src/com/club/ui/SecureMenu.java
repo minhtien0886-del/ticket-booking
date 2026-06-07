@@ -8,17 +8,28 @@ import com.club.service.TicketService;
 import com.club.simulator.*;
 import com.club.repository.*;
 import com.club.exception.*;
-import com.club.util.*;
 import java.io.*;
 import java.nio.file.*;
 import java.util.*;
 
 /**
- * Adaptable multi-level Secure CLI Menu system for the FCM-ERP.
- * Provides role-based menu navigation with interactive command input.
+ * VIEW layer — interactive CLI menu system for the FCM-ERP.
+ *
+ * <p><strong>MVC Compliance:</strong> This class is the View layer and must strictly
+ * adhere to the following rules:</p>
+ * <ul>
+ *   <li><strong>Allowed:</strong> Console text rendering ({@code System.out}),
+ *       ASCII table borders, option menus, {@code Scanner} keyboard input.</li>
+ *   <li><strong>Prohibited:</strong> Zero CSV file operations, zero business logic
+ *       execution, zero state calculations. Must pass raw input arguments to
+ *       Controller layer only.</li>
+ * </ul>
+ *
+ * <p>All business operations are delegated to Controllers. No service or repository
+ * methods are called directly from this class.</p>
  *
  * @author FCM-ERP Architecture Team
- * @version 1.0
+ * @version 2.0
  * @since Java 8
  */
 public class SecureMenu {
@@ -27,7 +38,10 @@ public class SecureMenu {
     private UserSession currentSession;
     private boolean running = true;
 
-    // Repositories
+    // ========================================================================
+    // REPOSITORY LAYER — held only for repository-level injection into services.
+    // No business logic, no data access, no CSV operations in this class.
+    // ========================================================================
     private AccountRepository accountRepo;
     private FanRepository fanRepo;
     private PlayerRepository playerRepo;
@@ -45,23 +59,39 @@ public class SecureMenu {
     private LoyaltyPointsRepository loyaltyPointsRepo;
     private AuditLogRepository auditLogRepo;
 
-    // Services
+    // ========================================================================
+    // SERVICE LAYER — held only for construction of controllers.
+    // No service methods are called directly from this VIEW class.
+    // ========================================================================
     private FinanceService financeService;
     private InventoryService inventoryService;
     private ShoppingCartService shoppingCartService;
     private TicketService ticketService;
     private HumanResourceService hrService;
 
-    // Controllers
+    // ========================================================================
+    // CONTROLLER LAYER — the ONLY layer this VIEW is permitted to interact with.
+    // ========================================================================
     private FanController fanController;
     private StadiumController stadiumController;
     private TicketController ticketController;
     private StaffController staffController;
+    private MatchController matchController;
+    private MerchandiseController merchandiseController;
+    private ShoppingCartController shoppingCartController;
+    private FinanceController financeController;
+    private HRController hrController;
 
-    // Simulator
+    // ========================================================================
+    // SIMULATOR
+    // ========================================================================
     private TicketSimulator simulator;
 
     private final Scanner scanner;
+
+    // ========================================================================
+    // CONSTRUCTION
+    // ========================================================================
 
     public SecureMenu(Path dataDir) {
         this.authManager = AuthenticationManager.getInstance();
@@ -107,7 +137,7 @@ public class SecureMenu {
             loyaltyPointsRepo.ensureLoaded();
             auditLogRepo.ensureLoaded();
         } catch (IOException e) {
-            System.err.println("Warning: Failed to load some repositories: " + e.getMessage());
+            System.err.println("[SecureMenu] Warning: Failed to load some repositories: " + e.getMessage());
         }
 
         authManager.setAccountRepository(accountRepo);
@@ -120,27 +150,33 @@ public class SecureMenu {
         financeService = new FinanceService(transactionRepo, salaryRepo, accountRepo);
         inventoryService = new InventoryService(merchandiseRepo);
         shoppingCartService = new ShoppingCartService(cartItemRepo, merchandiseRepo, fanRepo,
-            financeService, inventoryService);
+                financeService, inventoryService);
         ticketService = new TicketService(ticketRepo, seatRepo, matchRepo, fanRepo,
-            transactionRepo, financeService);
+                transactionRepo, financeService);
         hrService = new HumanResourceService(playerRepo, staffRepo, salaryRepo);
     }
 
     private void initializeControllers() {
-        fanController = new FanController(accountRepo, fanRepo, ticketRepo);
-        stadiumController = new StadiumController(seatRepo);
-        ticketController = new TicketController(ticketService, matchRepo, seatRepo);
-        staffController = new StaffController(hrService, playerRepo, staffRepo);
+        fanController        = new FanController(accountRepo, fanRepo, ticketRepo);
+        stadiumController   = new StadiumController(seatRepo);
+        ticketController   = new TicketController(ticketService, matchRepo, seatRepo);
+        staffController    = new StaffController(hrService, playerRepo, staffRepo);
+        matchController    = new MatchController(matchRepo, seatRepo);
+        merchandiseController = new MerchandiseController(inventoryService, merchandiseRepo);
+        shoppingCartController = new ShoppingCartController(shoppingCartService);
+        financeController = new FinanceController(financeService);
+        hrController = new HRController(hrService);
 
         simulator = new TicketSimulator(ticketService, seatRepo, ticketRepo,
-            matchRepo, fanRepo, transactionRepo);
+                matchRepo, fanRepo, transactionRepo);
     }
 
-    // ============ MAIN ENTRY ============
+    // ========================================================================
+    // MAIN ENTRY
+    // ========================================================================
 
     public void start() {
         printBanner();
-
         while (running) {
             if (currentSession == null) {
                 showLoginMenu();
@@ -148,7 +184,6 @@ public class SecureMenu {
                 showMainMenu();
             }
         }
-
         System.out.println("\nThank you for using FCM-ERP. Goodbye!");
     }
 
@@ -156,7 +191,9 @@ public class SecureMenu {
         running = false;
     }
 
-    // ============ LOGIN / REGISTRATION ============
+    // ========================================================================
+    // LOGIN / REGISTRATION
+    // ========================================================================
 
     private void showLoginMenu() {
         System.out.println("\n" + repeat("=", 60));
@@ -210,7 +247,7 @@ public class SecureMenu {
         String password = scanner.nextLine();
         System.out.print("  Initial Deposit (0 for none): ");
         double deposit = 0;
-        try { deposit = Double.parseDouble(scanner.nextLine().trim()); } catch (Exception e) {}
+        try { deposit = Double.parseDouble(scanner.nextLine().trim()); } catch (Exception e) { /* default 0 */ }
 
         try {
             Fan fan = fanController.registerFan(name, email, username, password, deposit);
@@ -226,14 +263,16 @@ public class SecureMenu {
         }
     }
 
-    // ============ MAIN MENU ============
+    // ========================================================================
+    // MAIN MENU
+    // ========================================================================
 
     private void showMainMenu() {
         System.out.println("\n" + repeat("=", 60));
         System.out.println("  FCM-ERP - MAIN DASHBOARD");
         System.out.println(repeat("-", 60));
         System.out.printf("  Logged in: %s | Role: %s%n",
-            currentSession.getPersonName(), currentSession.getRole().getDescription());
+                currentSession.getPersonName(), currentSession.getRole().getDescription());
 
         System.out.println("  [1] View Stadium Seat Map");
         System.out.println("  [2] View Match Schedule");
@@ -283,34 +322,40 @@ public class SecureMenu {
         }
     }
 
-    // ============ SUB MENUS ============
+    // ========================================================================
+    // SUB MENUS
+    // ========================================================================
+
+    // ---- STADIUM ----
 
     private void viewStadiumMap() {
-        stadiumController.renderStadiumMap();
+        System.out.println(stadiumController.renderStadiumMap());
         pause();
     }
 
     private void viewStadiumMapPublic() {
-        stadiumController.renderStadiumMap();
+        System.out.println(stadiumController.renderStadiumMap());
         pause();
     }
 
+    // ---- MATCHES ----
+
     private void viewMatchSchedule() {
-        List<Match> matches = matchRepo.findUpcoming();
+        List<Match> matches = matchController.getUpcomingMatches();
         System.out.println("\n" + repeat("=", 70));
         System.out.println("                      UPCOMING MATCHES");
         System.out.println(repeat("=", 70));
         System.out.printf("  %-12s %-20s %-15s %-10s %-10s%n",
-            "Match ID", "Teams", "Date", "Time", "Status");
+                "Match ID", "Teams", "Date", "Time", "Status");
         System.out.println(repeat("-", 70));
 
         for (Match m : matches) {
             System.out.printf("  %-12s %-20s %-15s %-10s %-10s%n",
-                m.getMatchId(),
-                m.getHomeTeam() + " vs " + m.getAwayTeam(),
-                m.getMatchDate(),
-                m.getMatchTime(),
-                m.getStatus().name());
+                    m.getMatchId(),
+                    m.getHomeTeam() + " vs " + m.getAwayTeam(),
+                    m.getMatchDate(),
+                    m.getMatchTime(),
+                    m.getStatus().name());
         }
 
         System.out.println(repeat("=", 70));
@@ -321,9 +366,11 @@ public class SecureMenu {
         viewMatchSchedule();
     }
 
+    // ---- TICKET BOOKING ----
+
     private void ticketBookingMenu() {
         System.out.println("\n  --- TICKET BOOKING ---");
-        List<Match> matches = matchRepo.findUpcoming();
+        List<Match> matches = matchController.getUpcomingMatches();
         if (matches.isEmpty()) {
             System.out.println("  No matches available for booking.");
             return;
@@ -333,7 +380,7 @@ public class SecureMenu {
         for (int i = 0; i < matches.size(); i++) {
             Match m = matches.get(i);
             System.out.printf("  [%d] %s vs %s - %s %s%n",
-                i + 1, m.getHomeTeam(), m.getAwayTeam(), m.getMatchDate(), m.getMatchTime());
+                    i + 1, m.getHomeTeam(), m.getAwayTeam(), m.getMatchDate(), m.getMatchTime());
         }
 
         System.out.print("  Choice: ");
@@ -346,7 +393,7 @@ public class SecureMenu {
         Match selected = matches.get(choice);
         System.out.println("\n  Selected: " + selected.getHomeTeam() + " vs " + selected.getAwayTeam());
 
-        stadiumController.renderStadiumMap();
+        System.out.println(stadiumController.renderStadiumMap());
 
         System.out.println("\n  HOW TO ENTER SEATS:");
         System.out.println("    - Full ID:    VIP-A-012, A-B-015         (SECTOR-ROW-NUMBER)");
@@ -356,7 +403,9 @@ public class SecureMenu {
         System.out.println("    - Note: S## is the position number shown below each seat on the map.");
         System.out.print("\n  Enter seat IDs (comma-separated, max 4): ");
         String input = scanner.nextLine().trim();
-        List<String> seatIds = resolvePositionInput(input, selected);
+
+        // Delegate token resolution to MatchController — no logic in VIEW
+        List<String> seatIds = matchController.resolveSeatTokens(input, selected);
 
         if (seatIds.isEmpty()) {
             System.out.println("  No seats selected.");
@@ -364,12 +413,12 @@ public class SecureMenu {
         }
 
         try {
-            List<Ticket> tickets = ticketService.bookTickets(
-                currentSession.getPersonId(), selected.getMatchId(), seatIds, currentSession.getUsername());
+            List<Ticket> tickets = ticketController.bookTickets(
+                    selected.getMatchId(), seatIds);
             System.out.println("\n  BOOKING SUCCESSFUL! " + tickets.size() + " ticket(s) issued:");
             for (Ticket t : tickets) {
                 System.out.printf("    Ticket ID: %s | Seat: %s | Price: %.2f%n",
-                    t.getTicketId(), t.getSeatId(), t.getPrice());
+                        t.getTicketId(), t.getSeatId(), t.getPrice());
             }
         } catch (ExceedsMaxTicketsException e) {
             System.out.println("  ERROR: " + e.getMessage());
@@ -384,18 +433,21 @@ public class SecureMenu {
         pause();
     }
 
+    // ---- MERCHANDISE SHOP ----
+
     private void merchandiseShopMenu() {
         System.out.println("\n  --- MERCHANDISE SHOP ---");
-        List<Merchandise> items = inventoryService.getInStockItems();
+        List<Merchandise> items = merchandiseController.getInStockItems();
 
         System.out.printf("  %-12s %-30s %-15s %-8s %-8s%n",
-            "Product ID", "Name", "Category", "Price", "Stock");
+                "Product ID", "Name", "Category", "Price", "Stock");
         System.out.println(repeat("-", 75));
 
         for (Merchandise m : items) {
+            String name = m.getName().length() > 28 ? m.getName().substring(0, 28) : m.getName();
             System.out.printf("  %-12s %-30s %-15s %-8.2f %-8d%n",
-                m.getProductId(), m.getName().length() > 28 ? m.getName().substring(0, 28) : m.getName(),
-                m.getCategory().name(), m.getBasePrice(), m.getStockQuantity());
+                    m.getProductId(), name, m.getCategory().name(),
+                    m.getBasePrice(), m.getStockQuantity());
         }
 
         System.out.println(repeat("-", 75));
@@ -406,9 +458,11 @@ public class SecureMenu {
             System.out.print("  Quantity (1-10): ");
             int qty = readInt();
             try {
-                Merchandise m = merchandiseRepo.findById(input);
+                Merchandise m = merchandiseController.getProduct(input);
                 if (m != null) {
-                    shoppingCartService.addToCart(currentSession.getPersonId(), input, qty, m.getSize(), m.getColor());
+                    shoppingCartController.addToCart(
+                            currentSession.getPersonId(), input, qty,
+                            m.getSize(), m.getColor());
                     System.out.println("  Added to cart: " + m.getName() + " x" + qty);
                 } else {
                     System.out.println("  Product not found.");
@@ -419,9 +473,12 @@ public class SecureMenu {
         }
     }
 
+    // ---- ACCOUNT ----
+
     private void accountMenu() {
         System.out.println("\n  --- MY ACCOUNT ---");
-        Fan fan = fanRepo.findById(currentSession.getPersonId());
+        // Delegate profile fetch to FanController
+        Fan fan = fanController.getFanById(currentSession.getPersonId());
         if (fan == null) {
             System.out.println("  Account not found.");
             return;
@@ -448,9 +505,11 @@ public class SecureMenu {
         }
     }
 
+    // ---- SHOPPING CART ----
+
     private void shoppingCartMenu() {
         System.out.println("\n  --- SHOPPING CART ---");
-        List<CartItem> items = shoppingCartService.getCartItems(currentSession.getPersonId());
+        List<CartItem> items = shoppingCartController.getCartItems(currentSession.getPersonId());
 
         if (items.isEmpty()) {
             System.out.println("  Your cart is empty.");
@@ -458,17 +517,18 @@ public class SecureMenu {
         }
 
         System.out.printf("  %-10s %-20s %-6s %-10s %-10s%n",
-            "Item ID", "Product", "Qty", "Unit Price", "Subtotal");
+                "Item ID", "Product", "Qty", "Unit Price", "Subtotal");
         System.out.println(repeat("-", 60));
 
         for (CartItem ci : items) {
+            String name = ci.getProductName().length() > 18
+                    ? ci.getProductName().substring(0, 18) : ci.getProductName();
             System.out.printf("  %-10s %-20s %-6d %-10.2f %-10.2f%n",
-                ci.getCartItemId().substring(0, 8),
-                ci.getProductName().length() > 18 ? ci.getProductName().substring(0, 18) : ci.getProductName(),
-                ci.getQuantity(), ci.getUnitPrice(), ci.getSubtotal());
+                    ci.getCartItemId().substring(0, 8),
+                    name, ci.getQuantity(), ci.getUnitPrice(), ci.getSubtotal());
         }
 
-        double total = shoppingCartService.getCartTotal(currentSession.getPersonId());
+        double total = shoppingCartController.getCartTotal(currentSession.getPersonId());
         System.out.println(repeat("-", 60));
         System.out.printf("  TOTAL: %.2f%n", total);
 
@@ -477,7 +537,8 @@ public class SecureMenu {
 
         if (choice.equals("C")) {
             try {
-                Transaction t = shoppingCartService.checkout(currentSession.getPersonId(), currentSession.getUsername());
+                Transaction t = shoppingCartController.checkout(
+                        currentSession.getPersonId(), currentSession.getUsername());
                 System.out.println("  CHECKOUT SUCCESSFUL! Transaction: " + t.getTransactionId());
             } catch (InsufficientBalanceException e) {
                 System.out.println("  ERROR: Insufficient balance.");
@@ -488,7 +549,7 @@ public class SecureMenu {
             System.out.print("  Enter item ID to remove: ");
             String id = scanner.nextLine().trim();
             try {
-                shoppingCartService.removeFromCart(id);
+                shoppingCartController.removeFromCart(id);
                 System.out.println("  Item removed.");
             } catch (Exception e) {
                 System.out.println("  ERROR: " + e.getMessage());
@@ -496,33 +557,41 @@ public class SecureMenu {
         }
     }
 
+    // ---- FINANCIAL REPORTS ----
+
     private void showFinancialReports() {
         System.out.println("\n  --- FINANCIAL REPORTS ---");
-        FinanceService.FinancialSummary summary = financeService.generateFinancialSummary();
+        FinanceService.FinancialSummary summary = financeController.generateFinancialSummary();
         System.out.println(summary.toFormattedReport());
         pause();
     }
 
+    // ---- HR MANAGEMENT ----
+
     private void showHRMenu() {
         System.out.println("\n  --- HR MANAGEMENT ---");
-        HumanResourceService.PersonnelReport report = hrService.generatePersonnelReport();
+        HumanResourceService.PersonnelReport report = hrController.generatePersonnelReport();
         System.out.println(report.toFormattedReport());
         pause();
     }
 
+    // ---- MATCH STATISTICS ----
+
     private void showMatchStatsMenu() {
         System.out.println("\n  --- MATCH STATISTICS ---");
-        List<Match> completed = matchRepo.findCompleted();
+        List<Match> completed = matchController.getCompletedMatches();
         System.out.printf("  Total completed matches: %d%n", completed.size());
 
         for (int i = 0; i < Math.min(5, completed.size()); i++) {
             Match m = completed.get(i);
             System.out.printf("  %s %s %s %s - %s %n",
-                m.getMatchId(), m.getHomeTeam(), m.getHomeScore(),
-                m.getAwayScore(), m.getAwayTeam(), m.getStatus());
+                    m.getMatchId(), m.getHomeTeam(), m.getHomeScore(),
+                    m.getAwayScore(), m.getAwayTeam(), m.getStatus());
         }
         pause();
     }
+
+    // ---- STADIUM MANAGEMENT ----
 
     private void showStadiumManagementMenu() {
         System.out.println("\n  --- STADIUM MANAGEMENT ---");
@@ -534,27 +603,29 @@ public class SecureMenu {
         String choice = scanner.nextLine().trim();
         switch (choice) {
             case "1":
-                stadiumController.renderStadiumMap();
+                System.out.println(stadiumController.renderStadiumMap());
                 break;
             case "2":
                 System.out.print("  Enter sector (VIP, A, B, C, D, E, F): ");
                 String sector = scanner.nextLine().trim().toUpperCase();
-                stadiumController.renderSectorMap(sector);
+                System.out.println(stadiumController.renderSectorMap(sector));
                 break;
             case "3":
                 Map<String, StadiumController.SectorStats> stats = stadiumController.getSectorStats();
                 System.out.println("\n  SECTOR STATISTICS:");
                 System.out.printf("  %-8s %-8s %-8s %-8s %-8s %-8s%n",
-                    "Sector", "Total", "Available", "Booked", "Locked", "Occupancy%");
+                        "Sector", "Total", "Available", "Booked", "Locked", "Occupancy%");
                 System.out.println(repeat("-", 55));
                 for (StadiumController.SectorStats s : stats.values()) {
                     System.out.printf("  %-8s %-8d %-8d %-8d %-8d %-8.1f%n",
-                        s.sector, s.total, s.available, s.booked, s.locked, s.getOccupancyRate());
+                            s.sector, s.total, s.available, s.booked, s.locked, s.getOccupancyRate());
                 }
                 break;
         }
         pause();
     }
+
+    // ---- SIMULATOR ----
 
     private void showSimulatorMenu() {
         System.out.println("\n  --- TICKET SIMULATOR ---");
@@ -613,6 +684,8 @@ public class SecureMenu {
         pause();
     }
 
+    // ---- LOGOUT ----
+
     private void doLogout() {
         if (currentSession != null) {
             authManager.logout("User requested logout");
@@ -621,7 +694,9 @@ public class SecureMenu {
         }
     }
 
-    // ============ UTILITIES ============
+    // ========================================================================
+    // UTILITIES — keyboard input helpers; no business logic
+    // ========================================================================
 
     private void pause() {
         System.out.print("\n  Press ENTER to continue...");
@@ -657,192 +732,8 @@ public class SecureMenu {
         System.out.println();
     }
 
-    /**
-     * Resolves user input tokens into concrete seat ID strings for booking.
-     *
-     * <p>This method handles three token formats:</p>
-     * <ol>
-     *   <li><b>Full ID</b> (e.g. {@code VIP-A-012}): passed through unchanged —
-     *       the caller is responsible for validating existence.</li>
-     *   <li><b>Sector-Row-Position</b> (e.g. {@code F-A-S01}, {@code VIP-C-S12}):
-     *       the token is parsed into its three components, the matching seats are
-     *       queried from the cache, sorted by physical seat number, and the
-     *       position-indexed seat is returned.</li>
-     *   <li><b>Sector-Position</b> (e.g. {@code A-S01}): same as above but the
-     *       row is implicitly determined by walking every row in the sector
-     *       sequentially.</li>
-     *   <li><b>Position-only</b> (e.g. {@code S01}): the seat is resolved by
-     *       walking all available seats in the entire stadium.</li>
-     * </ol>
-     *
-     * <p>Each resolved seat ID is validated against the cache — if the concrete ID
-     * does not exist, an {@link EntityNotFoundException} is thrown with a helpful
-     * message showing the original token and the derived ID.</p>
-     *
-     * @param input the raw comma-separated user input string
-     * @param match the currently selected match (used only for the global-position case)
-     * @return a list of concrete seat IDs (e.g. {@code ["VIP-A-012", "A-B-015"]})
-     * @throws EntityNotFoundException if a position token resolves to a seat ID
-     *         that does not exist in the repository cache
-     */
-    private List<String> resolvePositionInput(String input, Match match) {
-        List<String> resolved = new ArrayList<>();
-
-        for (String token : input.split(",")) {
-            String tok = token.trim();
-            if (tok.isEmpty()) continue;
-
-            // ─────────────────────────────────────────────────────────────────────
-            // FORMAT 1: Full ID — SECTOR-ROW-NUMBER (e.g. VIP-A-012)
-            // Pass through unchanged; the ticket booking service validates existence.
-            // ─────────────────────────────────────────────────────────────────────
-            if (tok.matches("^[A-Z]+-[A-Z]-\\d{3,4}$")) {
-                resolved.add(tok);
-                continue;
-            }
-
-            // ─────────────────────────────────────────────────────────────────────
-            // FORMAT 2: 3-part position — SECTOR-ROW-POSITION (e.g. F-A-S01, VIP-C-S12)
-            // Pattern: [SECTOR]-[ROW]-[S##]
-            // Example: "VIP-C-S12"
-            //   parts[0] = "VIP"   → sector
-            //   parts[1] = "C"     → row letter
-            //   parts[2] = "S12"   → position number → index = 12 (1-based)
-            // ─────────────────────────────────────────────────────────────────────
-            if (tok.matches("^[A-Z_]+-[A-Z]-S\\d{1,3}$")) {
-                // Split on the last "-S" boundary so that the sector may itself
-                // contain underscores (e.g. SECTOR_A) without ambiguity.
-                int dashS = tok.lastIndexOf("-S");
-                // Extract sector+row by taking everything before "dashS".
-                // e.g. "VIP-C-S12".lastIndexOf("-S") = 5 → "VIP-C" (indices 0..4)
-                String sectorAndRow = tok.substring(0, dashS);
-                // The position number string, e.g. "S12".
-                String posStr = tok.substring(dashS + 1); // "+1" skips the '-' itself
-
-                // sectorAndRow is "VIP-C" — split once on the first '-' to separate.
-                // This guarantees we handle sector names like "VIP" or "SECTOR_A".
-                int firstDash = sectorAndRow.indexOf('-');
-                String sector = sectorAndRow.substring(0, firstDash);    // "VIP"
-                String row    = sectorAndRow.substring(firstDash + 1);  // "C"
-
-                // Strip the leading 'S' from "S12" and convert to 1-based integer.
-                // "S12" → "12" → 12.  Subtracting 1 converts to 0-based index.
-                int posIndex = Integer.parseInt(posStr.substring(1)) - 1;
-
-                // Query the repository cache for all seats in this sector and row.
-                // O(N) scan of the ConcurrentHashMap — acceptable since the map
-                // is already in memory and this runs once per token per booking.
-                List<Seat> rowSeats = new ArrayList<>(seatRepo.findBySectorAndRow(sector, row));
-                if (rowSeats.isEmpty()) {
-                    throw new EntityNotFoundException("Seat", sector + "-" + row
-                            + ": no seats found for this sector/row combination");
-                }
-
-                // Sort seats by their physical seat number so that S01 maps to the
-                // first seat in the row, S02 to the second, etc.
-                rowSeats.sort(Comparator.comparingInt(Seat::getSeatNumber));
-
-                // Bounds-check: position numbers shown on the map are 1-based.
-                if (posIndex < 0 || posIndex >= rowSeats.size()) {
-                    throw new EntityNotFoundException("Seat", sector + "-" + row
-                            + ": position S" + (posIndex + 1)
-                            + " is out of range for this row (max S"
-                            + rowSeats.size() + ")");
-                }
-
-                Seat target = rowSeats.get(posIndex);
-                resolved.add(target.getSeatId());
-                continue;
-            }
-
-            // ─────────────────────────────────────────────────────────────────────
-            // FORMAT 3: 2-part position — SECTOR-POSITION (e.g. A-S01)
-            // Pattern: [SECTOR]-[S##]
-            // The row is determined by walking rows in sorted order (A, B, C...).
-            // Example: "A-S01" with SECTOR=A, posStr="S01", posIndex=0
-            //   → Row A: seats [A-A-001, A-A-002, ...]   (posIndex=0 → A-A-001)
-            //   → Row B: seats [A-B-001, A-B-002, ...]   (posIndex=2 → A-B-003)
-            // ─────────────────────────────────────────────────────────────────────
-            if (tok.matches("^[A-Z]+-S\\d{1,3}$")) {
-                int dashS = tok.lastIndexOf("-S");
-                String sector   = tok.substring(0, dashS);      // "A"
-                String posStr   = tok.substring(dashS + 1);      // "S01"
-                int posIndex    = Integer.parseInt(posStr.substring(1)) - 1;
-
-                // Collect every seat in this sector, grouped by row letter.
-                // LinkedHashMap preserves insertion order — important so that when
-                // we iterate rows sequentially, we visit Row A before Row B, etc.
-                Map<String, List<Seat>> byRow = new LinkedHashMap<>();
-                for (Seat s : new ArrayList<>(seatRepo.findBySector(sector))) {
-                    byRow.computeIfAbsent(s.getRowNum(), k -> new ArrayList<>()).add(s);
-                }
-
-                if (byRow.isEmpty()) {
-                    throw new EntityNotFoundException("Seat", sector
-                            + ": sector not found or has no seats");
-                }
-
-                int globalIdx = 0;
-                outer:
-                for (Map.Entry<String, List<Seat>> entry : byRow.entrySet()) {
-                    List<Seat> sorted = entry.getValue();
-                    sorted.sort(Comparator.comparingInt(Seat::getSeatNumber));
-                    for (Seat s : sorted) {
-                        if (globalIdx == posIndex) {
-                            resolved.add(s.getSeatId());
-                            break outer;
-                        }
-                        globalIdx++;
-                    }
-                }
-
-                // If we exit the loop without matching, posIndex exceeded the
-                // total seat count for this sector. Detect via totalSeats.
-                int totalSeats = byRow.values().stream()
-                        .mapToInt(List::size).sum();
-                if (posIndex >= totalSeats) {
-                    throw new EntityNotFoundException("Seat",
-                            sector + ": position S" + (posIndex + 1)
-                            + " is out of range (sector " + sector
-                            + " has " + totalSeats + " seats)");
-                }
-                continue;
-            }
-
-            // ─────────────────────────────────────────────────────────────────────
-            // FORMAT 4: Position-only — S## (e.g. S01) — global stadium position
-            // Resolves across ALL sectors and rows in sorted order.
-            // This is the least precise format — the stadium map position numbers
-            // restart at S01 for each displayed row, so this format is ambiguous
-            // unless the user only has one seat in mind.
-            // ─────────────────────────────────────────────────────────────────────
-            if (tok.matches("^S\\d{1,3}$")) {
-                int posIndex = Integer.parseInt(tok.substring(1)) - 1;
-                int globalIdx = 0;
-                for (Seat seat : seatRepo.findAll()) {
-                    if (globalIdx == posIndex) {
-                        resolved.add(seat.getSeatId());
-                        break;
-                    }
-                    globalIdx++;
-                }
-                continue;
-            }
-
-            // ─────────────────────────────────────────────────────────────────────
-            // FALLBACK: Unknown format — treat as-is and let the booking service
-            // handle the validation error.  This makes the system robust to future
-            // format extensions without needing to modify this method.
-            // ─────────────────────────────────────────────────────────────────────
-            resolved.add(tok);
-        }
-
-        // Post-condition: max 4 seats per booking (enforced by caller).
-        return resolved;
-    }
-
     private String repeat(String s, int count) {
-        StringBuilder sb = new StringBuilder();
+        StringBuilder sb = new StringBuilder(count * s.length());
         for (int i = 0; i < count; i++) sb.append(s);
         return sb.toString();
     }

@@ -9,87 +9,9 @@ import java.util.*;
 import java.util.concurrent.*;
 import java.util.function.*;
 
-/**
- * Generic CSV persistence layer providing high-performance, thread-safe CRUD operations
- * for domain entities backed by an in-memory {@link ConcurrentHashMap} cache and
- * a Write-Ahead Logging (WAL) engine for crash-safe atomic file writes.
- *
- * <h3>Architecture Overview</h3>
- *
- * <p>The repository follows a <b>cache-first, write-through</b> strategy:</p>
- * <ul>
- *   <li><b>Reads</b> are served entirely from the {@link ConcurrentHashMap} cache
- *       at O(1) guaranteed latency.</li>
- *   <li><b>Writes</b> update the cache immediately, then flush to disk via
- *       {@link WriteAheadLog#writeWithWal(Path, String, List)} to guarantee
- *       atomic, crash-safe persistence.</li>
- *   <li><b>Lazy loading</b> defers CSV parsing until the first read operation,
- *       using double-checked locking to ensure exactly one thread loads the data.</li>
- * </ul>
- *
- * <h3>Thread Safety &amp; Concurrency</h3>
- *
- * <ul>
- *   <li>The cache is a {@link ConcurrentHashMap} &mdash; all atomic operations
- *       ({@code get}, {@code put}, {@code remove}) are lock-free on the JMM level.</li>
- *   <li>The {@code loaded} flag is {@code volatile} &mdash; ensures visibility of
- *       the loaded state across threads without explicit synchronisation.</li>
- *   <li>Double-checked locking on {@code loadLock} ensures that
- *       {@link #ensureLoaded()} triggers exactly one {@link #loadAll()} call
- *       even under concurrent access from multiple threads.</li>
- *   <li>Write operations are serialised via the intrinsic {@code writeLock}
- *       monitor to prevent concurrent writes from corrupting the WAL pipeline.</li>
- * </ul>
- *
- * <h3>Time Complexity Summary</h3>
- * <table border="1" summary="Time complexity of all public methods">
- *   <tr><th>Method</th>                     <th>Best</th>  <th>Worst</th> <th>Notes</th></tr>
- *   <tr><td>{@link #findById}</td>           <td>O(1)</td>  <td>O(1)</td>  <td>ConcurrentHashMap.get()</td></tr>
- *   <tr><td>{@link #findAll}</td>             <td>O(N)</td>  <td>O(N)</td>  <td>Scans all N entries</td></tr>
- *   <tr><td>{@link #findAll(Predicate)}</td>  <td>O(N)</td>  <td>O(N)</td>  <td>Scans all N entries</td></tr>
- *   <tr><td>{@link #save}</td>                <td>O(N)</td>  <td>O(N)</td>  <td>put O(1) + WAL O(N write)</td></tr>
- *   <tr><td>{@link #cacheOnly}</td>           <td>O(1)</td>  <td>O(1)</td>  <td>ConcurrentHashMap.put O(1)</td></tr>
- *   <tr><td>{@link #flush}</td>               <td>O(N)</td>  <td>O(N)</td>  <td>Writes all N rows to disk</td></tr>
- *   <tr><td>{@link #deleteById}</td>          <td>O(N)</td>  <td>O(N)</td>  <td>remove O(1) + WAL O(N write)</td></tr>
- *   <tr><td>{@link #count}</td>               <td>O(1)</td>  <td>O(1)</td>  <td>ConcurrentHashMap.size()</td></tr>
- *   <tr><td>{@link #loadAll}</td>             <td>O(N)</td>  <td>O(N)</td>  <td>Single-pass parse of N CSV rows</td></tr>
- * </table>
- *
- * <h3>Space Complexity</h3>
- * <ul>
- *   <li><b>Cache:</b> O(N) where N is the number of entities.</li>
- *   <li><b>WAL temp space:</b> O(N) additional disk space during {@code flush()}.</li>
- * </ul>
- *
- * <h3>Subclassing Contract</h3>
- * <p>Concrete repositories must implement three abstract methods:</p>
- * <ol>
- *   <li>{@link #parse(String)} &mdash; converts a raw CSV row to an entity instance.</li>
- *   <li>{@link #serialize(Object)} &mdash; converts an entity to its CSV row representation.</li>
- *   <li>{@link #getId(Object)} &mdash; extracts the unique identifier from an entity.</li>
- * </ol>
- *
- * @param <T> the entity type managed by this repository
- * @author FCM-ERP Architecture Team
- * @version 2.0
- * @since Java 8
- */
 public abstract class GenericCsvRepository<T> {
-
-    // =========================================================================
-    // FIELDS — all declared before any method or constructor body that references them
-    // =========================================================================
-
-    /** Path to the persistent CSV data file managed by this repository. */
     protected final Path filePath;
-
-    /**
-     * In-memory cache of all loaded entities, keyed by their string identifier.
-     * Thread-safe and lock-free for all read operations via ConcurrentHashMap.
-     */
     protected final ConcurrentHashMap<String, T> cache = new ConcurrentHashMap<>();
-
-    /** CSV column-delimiter matching RFC 4180 conventions. */
     protected static final String CSV_DELIMITER = ",";
 
     /** Human-readable name of the primary key column, used in diagnostics. */
@@ -266,10 +188,10 @@ public abstract class GenericCsvRepository<T> {
 
         // WAL recovery — restore from backup if a prior write was interrupted.
         if (WriteAheadLog.needsRecovery(filePath)) {
-            System.out.println("[WAL] Detected interrupted write on "
+            System.err.println("[WAL] Detected interrupted write on "
                     + filePath.getFileName() + " — initiating recovery...");
             WriteAheadLog.recover(filePath);
-            System.out.println("[WAL] Recovery complete.");
+            System.err.println("[WAL] Recovery complete.");
         }
 
         cache.clear();
@@ -315,7 +237,7 @@ public abstract class GenericCsvRepository<T> {
 
         long elapsedMs = (System.nanoTime() - startNs) / 1_000_000;
         this.loadedCount = count;
-        System.out.println(String.format("[%s] Loaded %,d records in %dms",
+        System.err.println(String.format("[%s] Loaded %,d records in %dms",
                 getClass().getSimpleName(), count, elapsedMs));
     }
 
@@ -705,10 +627,5 @@ public abstract class GenericCsvRepository<T> {
                 loadedCount,
                 cache.size(),
                 loaded);
-    }
-
-    /** Prints the current cache statistics to System.out. */
-    public void printCacheStats() {
-        System.out.println(getCacheStats());
     }
 }

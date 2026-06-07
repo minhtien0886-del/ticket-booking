@@ -7,8 +7,12 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /**
- * Secure stadium seat map controller that renders a dynamic ASCII representation
- * of the stadium layout with color-coded seat states.
+ * Secure controller for stadium seat map operations.
+ *
+ * <p><strong>MVC Compliance:</strong> This controller contains ZERO direct output calls.
+ * All render methods return a {@code String} which the VIEW layer (SecureMenu) is
+ * responsible for displaying. No {@code System.out}, {@code System.err}, or
+ * {@code Scanner} usage is permitted in this class.</p>
  *
  * <h3>Permission Matrix</h3>
  * <table border="1">
@@ -17,9 +21,6 @@ import java.util.stream.Collectors;
  *   <tr><td>renderSectorMap</td>   <td>VIEW_SEAT_MAP</td>      <td>ALL ROLES</td></tr>
  *   <tr><td>getSectorStats</td>     <td>VIEW_SEAT_MAP</td>      <td>ALL ROLES</td></tr>
  * </table>
- *
- * <p>FAN role has VIEW_SEAT_MAP and can browse the map freely.</p>
- * <p>Anonymous (no session) callers are blocked — authentication is required.</p>
  *
  * @author FCM-ERP Architecture Team
  * @version 2.0
@@ -35,37 +36,49 @@ public final class StadiumController {
         this.securityContext = SecurityContext.getInstance();
     }
 
+    // -------------------------------------------------------------------------
+    // PUBLIC RENDER METHODS — all return String; VIEW layer prints
+    // -------------------------------------------------------------------------
+
     /**
-     * Renders the complete stadium seat map to the console.
-     * <p>Required: VIEW_SEAT_MAP</p>
+     * Renders the complete stadium seat map as a String.
      *
-     * Legend:
-     *   [#] AVAILABLE   [X] BOOKED   [L] LOCKED   [R] RESERVED   [-] UNAVAILABLE
+     * <p>Required: VIEW_SEAT_MAP permission.</p>
+     *
+     * @return the full ASCII stadium map as a String
      */
-    public void renderStadiumMap() {
+    public String renderStadiumMap() {
         securityContext.requirePermission(Permission.VIEW_SEAT_MAP);
         Map<String, List<Seat>> seatsBySector = new LinkedHashMap<>();
         for (Seat seat : seatRepo.findAll()) {
             seatsBySector.computeIfAbsent(seat.getSector(), k -> new ArrayList<>()).add(seat);
         }
-        System.out.println("\n" + repeat("=", 72));
-        System.out.println("                        FOOTBALL STADIUM SEAT MAP");
-        System.out.println(repeat("=", 72));
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("\n").append(repeat("=", 72)).append("\n");
+        sb.append("                        FOOTBALL STADIUM SEAT MAP\n");
+        sb.append(repeat("=", 72)).append("\n");
+
         for (Map.Entry<String, List<Seat>> sectorEntry : seatsBySector.entrySet()) {
             String sector = sectorEntry.getKey();
             List<Seat> seats = sectorEntry.getValue();
-            System.out.println("\n  [" + sector + "] " + getSectorName(sector)
-                    + " " + repeat("-", 50 - sector.length() - getSectorName(sector).length()));
-            System.out.println("  " + repeat("-", 60));
+            sb.append("\n  [").append(sector).append("] ").append(getSectorName(sector));
+            int dashes = 50 - sector.length() - getSectorName(sector).length();
+            if (dashes > 0) sb.append(" ").append(repeat("-", dashes));
+            sb.append("\n");
+            sb.append("  ").append(repeat("-", 60)).append("\n");
+
             Map<String, List<Seat>> byRow = seats.stream()
                     .collect(Collectors.groupingBy(Seat::getRowNum, LinkedHashMap::new, Collectors.toList()));
             for (Map.Entry<String, List<Seat>> rowEntry : byRow.entrySet()) {
                 String row = rowEntry.getKey();
                 List<Seat> rowSeats = rowEntry.getValue();
                 rowSeats.sort(Comparator.comparingInt(Seat::getSeatNumber));
-                System.out.printf("  Row %s: ", row);
+
+                sb.append(String.format("  Row %s: ", row));
                 StringBuilder seatLine = new StringBuilder();
                 StringBuilder numLine = new StringBuilder("           ");
+
                 for (int i = 0; i < rowSeats.size(); i++) {
                     Seat seat = rowSeats.get(i);
                     String symbol = getSeatSymbol(seat.getStatus());
@@ -73,36 +86,44 @@ public final class StadiumController {
                     seatLine.append(symbol).append(posNum).append(" ");
                     numLine.append("       ");
                 }
-                System.out.println(seatLine.toString());
-                System.out.println(numLine.toString());
+                sb.append(seatLine).append("\n");
+                sb.append(numLine).append("\n");
             }
-            printSectorSummary(sector, seats);
+            appendSectorSummary(sb, sector, seats);
         }
-        System.out.println("\n" + repeat("=", 72));
-        printLegend();
-        System.out.println(repeat("=", 72));
+
+        sb.append("\n").append(repeat("=", 72)).append("\n");
+        appendLegend(sb);
+        sb.append(repeat("=", 72)).append("\n");
+        return sb.toString();
     }
 
     /**
-     * Renders a specific sector's seat map.
-     * <p>Required: VIEW_SEAT_MAP</p>
+     * Renders a specific sector's seat map as a String.
+     *
+     * <p>Required: VIEW_SEAT_MAP permission.</p>
+     *
+     * @param sector the sector to render
+     * @return the sector map as a String
      */
-    public void renderSectorMap(String sector) {
+    public String renderSectorMap(String sector) {
         securityContext.requirePermission(Permission.VIEW_SEAT_MAP);
         List<Seat> seats = seatRepo.findBySector(sector);
         if (seats.isEmpty()) {
-            System.out.println("Sector '" + sector + "' not found.");
-            return;
+            return "Sector '" + sector + "' not found.";
         }
-        System.out.println("\n  Sector: " + sector + " (" + getSectorName(sector) + ")");
-        System.out.println("  " + repeat("=", 60));
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("\n  Sector: ").append(sector).append(" (").append(getSectorName(sector)).append(")\n");
+        sb.append("  ").append(repeat("=", 60)).append("\n");
+
         Map<String, List<Seat>> byRow = seats.stream()
                 .collect(Collectors.groupingBy(Seat::getRowNum, LinkedHashMap::new, Collectors.toList()));
         for (Map.Entry<String, List<Seat>> rowEntry : byRow.entrySet()) {
             String row = rowEntry.getKey();
             List<Seat> rowSeats = rowEntry.getValue();
             rowSeats.sort(Comparator.comparingInt(Seat::getSeatNumber));
-            System.out.printf("  Row %s: ", row);
+            sb.append(String.format("  Row %s: ", row));
             StringBuilder seatLine = new StringBuilder();
             StringBuilder numLine = new StringBuilder("           ");
             for (int i = 0; i < rowSeats.size(); i++) {
@@ -112,19 +133,24 @@ public final class StadiumController {
                 seatLine.append(symbol).append(posNum).append(" ");
                 numLine.append("       ");
             }
-            System.out.println(seatLine.toString());
-            System.out.println(numLine.toString());
+            sb.append(seatLine).append("\n");
+            sb.append(numLine).append("\n");
         }
-        printSectorSummary(sector, seats);
-        printLegend();
-        System.out.println("  Seat ID Format: SECTOR-ROW-NUMBER  (e.g., VIP-A-012, A-B-015)");
-        System.out.println("  Enter position number (S01, S02...) to get the seat ID, or type the full ID.");
-        System.out.println(repeat("=", 60));
+
+        appendSectorSummary(sb, sector, seats);
+        appendLegend(sb);
+        sb.append("  Seat ID Format: SECTOR-ROW-NUMBER  (e.g., VIP-A-012, A-B-015)%n");
+        sb.append("  Enter position number (S01, S02...) to get the seat ID, or type the full ID.%n");
+        sb.append(repeat("=", 60)).append("\n");
+        return sb.toString();
     }
 
     /**
      * Returns seat availability statistics for each sector.
-     * <p>Required: VIEW_SEAT_MAP</p>
+     *
+     * <p>Required: VIEW_SEAT_MAP permission.</p>
+     *
+     * @return map of sector name to statistics
      */
     public Map<String, SectorStats> getSectorStats() {
         securityContext.requirePermission(Permission.VIEW_SEAT_MAP);
@@ -137,21 +163,25 @@ public final class StadiumController {
         return stats;
     }
 
-    private void printSectorSummary(String sector, List<Seat> seats) {
+    // -------------------------------------------------------------------------
+    // PRIVATE HELPERS
+    // -------------------------------------------------------------------------
+
+    private void appendSectorSummary(StringBuilder sb, String sector, List<Seat> seats) {
         long available = seats.stream().filter(s -> s.getStatus() == SeatStatus.AVAILABLE).count();
         long booked    = seats.stream().filter(s -> s.getStatus() == SeatStatus.BOOKED).count();
         long locked    = seats.stream().filter(s -> s.getStatus() == SeatStatus.LOCKED).count();
         long reserved  = seats.stream().filter(s -> s.getStatus() == SeatStatus.RESERVED).count();
         double avgPrice = seats.stream().mapToDouble(Seat::getPrice).average().orElse(0);
-        System.out.printf("  %s: Available=%d, Booked=%d, Locked=%d, Reserved=%d, AvgPrice=%.2f%n",
-                sector, available, booked, locked, reserved, avgPrice);
+        sb.append(String.format("  %s: Available=%d, Booked=%d, Locked=%d, Reserved=%d, AvgPrice=%.2f%n",
+                sector, available, booked, locked, reserved, avgPrice));
     }
 
-    private void printLegend() {
-        System.out.println("  LEGEND:");
-        System.out.println("    [#] AVAILABLE  [X] BOOKED  [L] LOCKED  [R] RESERVED  [-] UNAVAILABLE");
-        System.out.println("  SEAT ID FORMAT: SECTOR-ROW-NUMBER  (e.g., VIP-A-012, A-B-015)");
-        System.out.println("  POSITION NUMBERS (S01, S02...) shown below each seat help you identify seats.");
+    private void appendLegend(StringBuilder sb) {
+        sb.append("  LEGEND:\n");
+        sb.append("    [#] AVAILABLE  [X] BOOKED  [L] LOCKED  [R] RESERVED  [-] UNAVAILABLE\n");
+        sb.append("  SEAT ID FORMAT: SECTOR-ROW-NUMBER  (e.g., VIP-A-012, A-B-015)%n");
+        sb.append("  POSITION NUMBERS (S01, S02...) shown below each seat help you identify seats.%n");
     }
 
     private String getSeatSymbol(SeatStatus status) {
@@ -179,12 +209,16 @@ public final class StadiumController {
     }
 
     private String repeat(String s, int count) {
-        StringBuilder sb = new StringBuilder();
+        StringBuilder sb = new StringBuilder(count * s.length());
         for (int i = 0; i < count; i++) sb.append(s);
         return sb.toString();
     }
 
-    /** Inner class for per-sector seat statistics. */
+    // -------------------------------------------------------------------------
+    // INNER CLASS — Sector statistics
+    // -------------------------------------------------------------------------
+
+    /** Per-sector seat statistics. */
     public static class SectorStats {
         public final String sector;
         public int total;
