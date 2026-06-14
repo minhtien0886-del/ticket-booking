@@ -114,6 +114,41 @@ public final class HumanResourceService {
         salaryRepo.save(record);
     }
 
+    /**
+     * Calculates and processes payroll for a specific employee (Player or Staff).
+     */
+    public void calculateEmployeePayroll(String personId, String period, String processedBy) throws IOException, PayrollException {
+        Player player = playerRepo.findById(personId);
+        if (player != null) {
+            processSalaryPayment(personId, "PLAYER", player.getSalary(), period, processedBy);
+            return;
+        }
+        
+        Staff staff = staffRepo.findById(personId);
+        if (staff != null) {
+            processSalaryPayment(personId, "STAFF", staff.getSalary(), period, processedBy);
+            return;
+        }
+        
+        throw new PayrollException(personId, 0.0, "Employee not found");
+    }
+
+    /**
+     * Calculates and processes payroll for all active employees.
+     */
+    public void calculateAllEmployeePayroll(String period, String processedBy) throws IOException {
+        for (Player p : playerRepo.findAll()) {
+            if (p.getInjuryStatus() != InjuryStatus.UNDER_REVIEW) {
+                processSalaryPayment(p.getId(), "PLAYER", p.getSalary(), period, processedBy);
+            }
+        }
+        for (Staff s : staffRepo.findAll()) {
+            if (s.isActive()) {
+                processSalaryPayment(s.getId(), "STAFF", s.getSalary(), period, processedBy);
+            }
+        }
+    }
+
     public List<SalaryRecord> getSalaryHistory(String personId) {
         return salaryRepo.findByPersonId(personId);
     }

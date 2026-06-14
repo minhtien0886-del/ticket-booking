@@ -11,7 +11,7 @@ import java.util.Objects;
  * @version 1.0
  * @since Java 8
  */
-public class Transaction {
+public class Transaction extends BaseEntity {
 
     private static final long serialVersionUID = 1L;
 
@@ -138,7 +138,13 @@ public class Transaction {
         );
     }
 
-    public String toCsv() {
+    @Override
+    public String getEntityId() {
+        return transactionId;
+    }
+
+    @Override
+    public String toCsvLine() {
         return String.join(",",
             safe(transactionId),
             safe(timestamp),
@@ -152,42 +158,34 @@ public class Transaction {
         );
     }
 
-    private String safe(String s) {
-        if (s == null) return "";
-        return s.contains(",") ? "\"" + s + "\"" : s;
+    /** @deprecated Use {@link #toCsvLine()} instead. */
+    @Deprecated
+    public String toCsv() {
+        return toCsvLine();
     }
 
-    public static Transaction fromCsv(String csv) {
+    public static Transaction fromCsvLine(String csv) {
         if (csv == null || csv.trim().isEmpty()) return null;
         String[] parts = parseCsvLine(csv);
+        if (parts.length < 1) return null;
         Transaction t = new Transaction();
-        t.setTransactionId(parts.length > 0 ? parts[0] : null);
-        t.setTimestamp(parts.length > 1 ? parts[1] : null);
-        try { t.setType(TransactionType.valueOf(parts.length > 2 ? parts[2] : "OTHER_INCOME")); } catch (Exception e) { /* default */ }
-        try { t.setAmount(Double.parseDouble(parts.length > 3 ? parts[3] : "0")); } catch (Exception e) { /* default 0 */ }
-        t.setDescription(parts.length > 4 ? parts[4] : null);
-        t.setReferenceId(parts.length > 5 ? parts[5] : null);
-        t.setCategory(parts.length > 6 ? parts[6] : null);
-        t.setProcessedBy(parts.length > 7 ? parts[7] : null);
-        try { t.setReconciled(Boolean.parseBoolean(parts.length > 8 ? parts[8] : "false")); } catch (Exception e) { /* default false */ }
+        t.setTransactionId(getField(parts, 0, null));
+        t.setTimestamp(getField(parts, 1, null));
+        try { t.setType(TransactionType.valueOf(getField(parts, 2, "OTHER_INCOME"))); } catch (Exception e) { /* default */ }
+        t.setAmount(getDoubleField(parts, 3, 0.0));
+        t.setDescription(getField(parts, 4, null));
+        t.setReferenceId(getField(parts, 5, null));
+        t.setCategory(getField(parts, 6, null));
+        t.setProcessedBy(getField(parts, 7, null));
+        t.setReconciled(getBooleanField(parts, 8, false));
         return t;
     }
 
-    private static String[] parseCsvLine(String csv) {
-        java.util.List<String> result = new java.util.ArrayList<>();
-        boolean inQuotes = false;
-        StringBuilder current = new StringBuilder();
-        for (char c : csv.toCharArray()) {
-            if (c == '"') {
-                inQuotes = !inQuotes;
-            } else if (c == ',' && !inQuotes) {
-                result.add(current.toString());
-                current = new StringBuilder();
-            } else {
-                current.append(c);
-            }
-        }
-        result.add(current.toString());
-        return result.toArray(new String[0]);
+    /** @deprecated Use {@link #fromCsvLine(String)} instead. */
+    @Deprecated
+    public static Transaction fromCsv(String csv) {
+        return fromCsvLine(csv);
     }
+
+    // parseCsvLine() and safe() are inherited from BaseEntity
 }

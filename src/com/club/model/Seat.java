@@ -16,7 +16,7 @@ import java.util.Objects;
  * @since Java 8
  * @see SeatStatus
  */
-public class Seat {
+public class Seat extends BaseEntity {
 
     private static final long serialVersionUID = 1L;
 
@@ -274,7 +274,13 @@ public class Seat {
         );
     }
 
-    public String toCsv() {
+    @Override
+    public String getEntityId() {
+        return seatId;
+    }
+
+    @Override
+    public String toCsvLine() {
         return String.join(",",
             safe(seatId),
             safe(sector),
@@ -289,43 +295,35 @@ public class Seat {
         );
     }
 
-    private String safe(String s) {
-        if (s == null) return "";
-        return s.contains(",") ? "\"" + s + "\"" : s;
+    /** @deprecated Use {@link #toCsvLine()} instead. */
+    @Deprecated
+    public String toCsv() {
+        return toCsvLine();
     }
 
-    public static Seat fromCsv(String csv) {
+    public static Seat fromCsvLine(String csv) {
         if (csv == null || csv.trim().isEmpty()) return null;
         String[] parts = parseCsvLine(csv);
+        if (parts.length < 1) return null;
         Seat s = new Seat();
-        s.setSeatId(parts.length > 0 ? parts[0] : "");
-        s.setSector(parts.length > 1 ? parts[1] : null);
-        s.setRowNum(parts.length > 2 ? parts[2] : null);
-        try { s.setSeatNumber(Integer.parseInt(parts.length > 3 ? parts[3] : "1")); } catch (Exception e) { /* default 1 */ }
-        try { s.setPrice(Double.parseDouble(parts.length > 4 ? parts[4] : "0")); } catch (Exception e) { /* default 0 */ }
-        try { s.setStatus(SeatStatus.valueOf(parts.length > 5 ? parts[5] : "AVAILABLE")); } catch (Exception e) { /* default */ }
-        try { s.setVersion(Integer.parseInt(parts.length > 6 ? parts[6] : "1")); } catch (Exception e) { /* default 1 */ }
-        try { s.setHasGoodView(Boolean.parseBoolean(parts.length > 7 ? parts[7] : "true")); } catch (Exception e) { /* default true */ }
-        try { s.setCovered(Boolean.parseBoolean(parts.length > 8 ? parts[8] : "false")); } catch (Exception e) { /* default false */ }
-        s.setDescription(parts.length > 9 ? parts[9] : null);
+        s.setSeatId(getField(parts, 0, ""));
+        s.setSector(getField(parts, 1, null));
+        s.setRowNum(getField(parts, 2, null));
+        s.setSeatNumber(getIntField(parts, 3, 1));
+        s.setPrice(getDoubleField(parts, 4, 0.0));
+        try { s.setStatus(SeatStatus.valueOf(getField(parts, 5, "AVAILABLE"))); } catch (Exception e) { /* default */ }
+        s.setVersion(getIntField(parts, 6, 1));
+        s.setHasGoodView(getBooleanField(parts, 7, true));
+        s.setCovered(getBooleanField(parts, 8, false));
+        s.setDescription(getField(parts, 9, null));
         return s;
     }
 
-    private static String[] parseCsvLine(String csv) {
-        java.util.List<String> result = new java.util.ArrayList<>();
-        boolean inQuotes = false;
-        StringBuilder current = new StringBuilder();
-        for (char c : csv.toCharArray()) {
-            if (c == '"') {
-                inQuotes = !inQuotes;
-            } else if (c == ',' && !inQuotes) {
-                result.add(current.toString());
-                current = new StringBuilder();
-            } else {
-                current.append(c);
-            }
-        }
-        result.add(current.toString());
-        return result.toArray(new String[0]);
+    /** @deprecated Use {@link #fromCsvLine(String)} instead. */
+    @Deprecated
+    public static Seat fromCsv(String csv) {
+        return fromCsvLine(csv);
     }
+
+    // parseCsvLine() and safe() are inherited from BaseEntity
 }

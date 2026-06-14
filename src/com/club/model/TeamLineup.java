@@ -8,7 +8,7 @@ package com.club.model;
  * @version 1.0
  * @since Java 8
  */
-public class TeamLineup {
+public class TeamLineup extends BaseEntity {
 
     private static final long serialVersionUID = 1L;
 
@@ -87,30 +87,45 @@ public class TeamLineup {
         this.createdAt = createdAt;
     }
 
-    public String toCsv() {
+    @Override
+    public String getEntityId() {
+        return lineupId;
+    }
+
+    @Override
+    public String toCsvLine() {
         return String.join(",",
             safe(lineupId), safe(matchId), safe(teamName), safe(formation),
             safe(startingPlayers), safe(substitutes), safe(tactics), safe(createdAt)
         );
     }
 
-    private String safe(String s) {
-        return s == null ? "" : s.contains(",") ? "\"" + s + "\"" : s;
+    /** @deprecated Use {@link #toCsvLine()} instead. */
+    @Deprecated
+    public String toCsv() {
+        return toCsvLine();
     }
 
-    public static TeamLineup fromCsv(String csv) {
+    public static TeamLineup fromCsvLine(String csv) {
         if (csv == null || csv.trim().isEmpty()) return null;
-        String[] parts = csv.split(",", -1);
+        String[] parts = parseCsvLine(csv);
+        if (parts.length < 1) return null;
         TeamLineup tl = new TeamLineup();
-        tl.setLineupId(parts.length > 0 ? parts[0] : null);
-        tl.setMatchId(parts.length > 1 ? parts[1] : null);
-        tl.setTeamName(parts.length > 2 ? parts[2] : null);
-        tl.setFormation(parts.length > 3 ? parts[3] : null);
-        tl.setStartingPlayers(parts.length > 4 ? parts[4] : null);
-        tl.setSubstitutes(parts.length > 5 ? parts[5] : null);
-        tl.setTactics(parts.length > 6 ? parts[6] : null);
-        tl.setCreatedAt(parts.length > 7 ? parts[7] : null);
+        tl.setLineupId(getField(parts, 0, null));
+        tl.setMatchId(getField(parts, 1, null));
+        tl.setTeamName(getField(parts, 2, null));
+        tl.setFormation(getField(parts, 3, null));
+        tl.setStartingPlayers(getField(parts, 4, null));
+        tl.setSubstitutes(getField(parts, 5, null));
+        tl.setTactics(getField(parts, 6, null));
+        tl.setCreatedAt(getField(parts, 7, null));
         return tl;
+    }
+
+    /** @deprecated Use {@link #fromCsvLine(String)} instead. */
+    @Deprecated
+    public static TeamLineup fromCsv(String csv) {
+        return fromCsvLine(csv);
     }
 
     @Override

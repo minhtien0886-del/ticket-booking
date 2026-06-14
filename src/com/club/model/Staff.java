@@ -225,7 +225,8 @@ public class Staff extends Person {
         );
     }
 
-    public String toCsv() {
+    @Override
+    public String toCsvLine() {
         return String.join(",",
             safe(id),
             safe(name),
@@ -241,44 +242,35 @@ public class Staff extends Person {
         );
     }
 
-    private String safe(String s) {
-        if (s == null) return "";
-        return s.contains(",") ? "\"" + s + "\"" : s;
+    /** @deprecated Use {@link #toCsvLine()} instead. */
+    @Deprecated
+    public String toCsv() {
+        return toCsvLine();
     }
 
-    public static Staff fromCsv(String csv) {
+    public static Staff fromCsvLine(String csv) {
         String[] parts = parseCsvLine(csv);
+        if (parts.length < 3) return null;
         Staff s = new Staff();
         s.setId(parts[0]);
         s.setName(parts[1]);
         s.setEmail(parts[2]);
-        try { s.setSpecificRole(SpecificRole.valueOf(parts[3])); } catch (Exception e) { /* default */ }
-        try { s.setSalary(Double.parseDouble(parts[4])); } catch (Exception e) { /* default 0 */ }
-        s.setDepartment(parts.length > 5 ? parts[5] : null);
-        s.setStartDate(parts.length > 6 ? parts[6] : null);
-        s.setEndDate(parts.length > 7 ? parts[7] : null);
-        try { s.setActive(Boolean.parseBoolean(parts.length > 8 ? parts[8] : "true")); } catch (Exception e) { /* default true */ }
-        s.setQualifications(parts.length > 9 ? parts[9] : null);
-        s.setReportsTo(parts.length > 10 ? parts[10] : null);
+        try { s.setSpecificRole(SpecificRole.valueOf(getField(parts, 3, "ADMIN_MANAGER"))); } catch (Exception e) { /* default */ }
+        s.setSalary(getDoubleField(parts, 4, 0.0));
+        s.setDepartment(getField(parts, 5, null));
+        s.setStartDate(getField(parts, 6, null));
+        s.setEndDate(getField(parts, 7, null));
+        s.setActive(getBooleanField(parts, 8, true));
+        s.setQualifications(getField(parts, 9, null));
+        s.setReportsTo(getField(parts, 10, null));
         return s;
     }
 
-    private static String[] parseCsvLine(String csv) {
-        if (csv == null || csv.trim().isEmpty()) return new String[11];
-        java.util.List<String> result = new java.util.ArrayList<>();
-        boolean inQuotes = false;
-        StringBuilder current = new StringBuilder();
-        for (char c : csv.toCharArray()) {
-            if (c == '"') {
-                inQuotes = !inQuotes;
-            } else if (c == ',' && !inQuotes) {
-                result.add(current.toString());
-                current = new StringBuilder();
-            } else {
-                current.append(c);
-            }
-        }
-        result.add(current.toString());
-        return result.toArray(new String[0]);
+    /** @deprecated Use {@link #fromCsvLine(String)} instead. */
+    @Deprecated
+    public static Staff fromCsv(String csv) {
+        return fromCsvLine(csv);
     }
+
+    // parseCsvLine() and safe() are inherited from BaseEntity
 }

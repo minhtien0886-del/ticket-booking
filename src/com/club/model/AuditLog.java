@@ -9,7 +9,7 @@ import java.util.Objects;
  * @version 1.0
  * @since Java 8
  */
-public class AuditLog {
+public class AuditLog extends BaseEntity {
 
     private static final long serialVersionUID = 1L;
 
@@ -110,31 +110,46 @@ public class AuditLog {
         return Objects.hash(logId);
     }
 
-    public String toCsv() {
+    @Override
+    public String getEntityId() {
+        return logId;
+    }
+
+    @Override
+    public String toCsvLine() {
         return String.join(",",
             safe(logId), safe(timestamp), safe(username), safe(action),
             safe(resource), safe(resourceId), safe(ipAddress), safe(result), safe(details)
         );
     }
 
-    private String safe(String s) {
-        return s == null ? "" : s.contains(",") ? "\"" + s + "\"" : s;
+    /** @deprecated Use {@link #toCsvLine()} instead. */
+    @Deprecated
+    public String toCsv() {
+        return toCsvLine();
     }
 
-    public static AuditLog fromCsv(String csv) {
+    public static AuditLog fromCsvLine(String csv) {
         if (csv == null || csv.trim().isEmpty()) return null;
-        String[] parts = csv.split(",", -1);
+        String[] parts = parseCsvLine(csv);
+        if (parts.length < 1) return null;
         AuditLog al = new AuditLog();
-        al.setLogId(parts.length > 0 ? parts[0] : null);
-        al.setTimestamp(parts.length > 1 ? parts[1] : null);
-        al.setUsername(parts.length > 2 ? parts[2] : null);
-        al.setAction(parts.length > 3 ? parts[3] : null);
-        al.setResource(parts.length > 4 ? parts[4] : null);
-        al.setResourceId(parts.length > 5 ? parts[5] : null);
-        al.setIpAddress(parts.length > 6 ? parts[6] : null);
-        al.setResult(parts.length > 7 ? parts[7] : null);
-        al.setDetails(parts.length > 8 ? parts[8] : null);
+        al.setLogId(getField(parts, 0, null));
+        al.setTimestamp(getField(parts, 1, null));
+        al.setUsername(getField(parts, 2, null));
+        al.setAction(getField(parts, 3, null));
+        al.setResource(getField(parts, 4, null));
+        al.setResourceId(getField(parts, 5, null));
+        al.setIpAddress(getField(parts, 6, null));
+        al.setResult(getField(parts, 7, null));
+        al.setDetails(getField(parts, 8, null));
         return al;
+    }
+
+    /** @deprecated Use {@link #fromCsvLine(String)} instead. */
+    @Deprecated
+    public static AuditLog fromCsv(String csv) {
+        return fromCsvLine(csv);
     }
 
     @Override

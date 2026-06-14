@@ -10,7 +10,7 @@ import java.util.Objects;
  * @version 1.0
  * @since Java 8
  */
-public class LeagueTableEntry {
+public class LeagueTableEntry extends BaseEntity {
 
     private static final long serialVersionUID = 1L;
 
@@ -178,7 +178,13 @@ public class LeagueTableEntry {
         );
     }
 
-    public String toCsv() {
+    @Override
+    public String getEntityId() {
+        return teamName + "_" + season;
+    }
+
+    @Override
+    public String toCsvLine() {
         return String.join(",",
             safe(teamName),
             String.valueOf(played),
@@ -194,25 +200,34 @@ public class LeagueTableEntry {
         );
     }
 
-    private String safe(String s) {
-        if (s == null) return "";
-        return s.contains(",") ? "\"" + s + "\"" : s;
+    /** @deprecated Use {@link #toCsvLine()} instead. */
+    @Deprecated
+    public String toCsv() {
+        return toCsvLine();
     }
 
-    public static LeagueTableEntry fromCsv(String csv) {
+    public static LeagueTableEntry fromCsvLine(String csv) {
         if (csv == null || csv.trim().isEmpty()) return null;
-        String[] parts = csv.split(",");
+        String[] parts = parseCsvLine(csv);
+        if (parts.length < 1) return null;
         LeagueTableEntry e = new LeagueTableEntry();
-        e.setTeamName(parts.length > 0 ? parts[0] : null);
-        try { e.setPlayed(Integer.parseInt(parts.length > 1 ? parts[1] : "0")); } catch (Exception ex) { /* default */ }
-        try { e.setWon(Integer.parseInt(parts.length > 2 ? parts[2] : "0")); } catch (Exception ex) { /* default */ }
-        try { e.setDrawn(Integer.parseInt(parts.length > 3 ? parts[3] : "0")); } catch (Exception ex) { /* default */ }
-        try { e.setLost(Integer.parseInt(parts.length > 4 ? parts[4] : "0")); } catch (Exception ex) { /* default */ }
-        try { e.setGoalsFor(Integer.parseInt(parts.length > 5 ? parts[5] : "0")); } catch (Exception ex) { /* default */ }
-        try { e.setGoalsAgainst(Integer.parseInt(parts.length > 6 ? parts[6] : "0")); } catch (Exception ex) { /* default */ }
-        try { e.setPoints(Integer.parseInt(parts.length > 8 ? parts[8] : "0")); } catch (Exception ex) { /* default */ }
-        e.setSeason(parts.length > 9 ? parts[9] : null);
-        try { e.setPosition(Integer.parseInt(parts.length > 10 ? parts[10] : "0")); } catch (Exception ex) { /* default */ }
+        e.setTeamName(getField(parts, 0, null));
+        e.setPlayed(getIntField(parts, 1, 0));
+        e.setWon(getIntField(parts, 2, 0));
+        e.setDrawn(getIntField(parts, 3, 0));
+        e.setLost(getIntField(parts, 4, 0));
+        e.setGoalsFor(getIntField(parts, 5, 0));
+        e.setGoalsAgainst(getIntField(parts, 6, 0));
+        // index 7 is goalDifference (calculated)
+        e.setPoints(getIntField(parts, 8, 0));
+        e.setSeason(getField(parts, 9, null));
+        e.setPosition(getIntField(parts, 10, 0));
         return e;
+    }
+
+    /** @deprecated Use {@link #fromCsvLine(String)} instead. */
+    @Deprecated
+    public static LeagueTableEntry fromCsv(String csv) {
+        return fromCsvLine(csv);
     }
 }

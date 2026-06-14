@@ -1,6 +1,5 @@
 package com.club.model;
 
-import java.io.Serializable;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -20,7 +19,7 @@ import java.util.UUID;
  * @version 1.0
  * @since Java 8
  */
-public abstract class Person implements Serializable {
+public abstract class Person extends BaseEntity {
 
     private static final long serialVersionUID = 1L;
 
@@ -107,6 +106,16 @@ public abstract class Person implements Serializable {
      * @return a string representing the concrete person type
      */
     public abstract String getPersonType();
+
+    /**
+     * Returns this person's unique ID as the entity identifier.
+     *
+     * @return the person's ID
+     */
+    @Override
+    public String getEntityId() {
+        return id;
+    }
 
     @Override
     public boolean equals(Object o) {

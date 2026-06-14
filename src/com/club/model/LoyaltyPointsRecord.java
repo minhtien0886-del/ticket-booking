@@ -7,7 +7,7 @@ package com.club.model;
  * @version 1.0
  * @since Java 8
  */
-public class LoyaltyPointsRecord {
+public class LoyaltyPointsRecord extends BaseEntity {
 
     private static final long serialVersionUID = 1L;
 
@@ -77,29 +77,44 @@ public class LoyaltyPointsRecord {
         this.description = description;
     }
 
-    public String toCsv() {
+    @Override
+    public String getEntityId() {
+        return recordId;
+    }
+
+    @Override
+    public String toCsvLine() {
         return String.join(",",
             safe(recordId), safe(fanId), String.valueOf(points),
             safe(transactionType), safe(referenceId), safe(timestamp), safe(description)
         );
     }
 
-    private String safe(String s) {
-        return s == null ? "" : s.contains(",") ? "\"" + s + "\"" : s;
+    /** @deprecated Use {@link #toCsvLine()} instead. */
+    @Deprecated
+    public String toCsv() {
+        return toCsvLine();
     }
 
-    public static LoyaltyPointsRecord fromCsv(String csv) {
+    public static LoyaltyPointsRecord fromCsvLine(String csv) {
         if (csv == null || csv.trim().isEmpty()) return null;
-        String[] parts = csv.split(",", -1);
+        String[] parts = parseCsvLine(csv);
+        if (parts.length < 1) return null;
         LoyaltyPointsRecord lp = new LoyaltyPointsRecord();
-        lp.setRecordId(parts.length > 0 ? parts[0] : null);
-        lp.setFanId(parts.length > 1 ? parts[1] : null);
-        try { lp.setPoints(Integer.parseInt(parts.length > 2 ? parts[2] : "0")); } catch (Exception e) { /* default 0 */ }
-        lp.setTransactionType(parts.length > 3 ? parts[3] : null);
-        lp.setReferenceId(parts.length > 4 ? parts[4] : null);
-        lp.setTimestamp(parts.length > 5 ? parts[5] : null);
-        lp.setDescription(parts.length > 6 ? parts[6] : null);
+        lp.setRecordId(getField(parts, 0, null));
+        lp.setFanId(getField(parts, 1, null));
+        lp.setPoints(getIntField(parts, 2, 0));
+        lp.setTransactionType(getField(parts, 3, null));
+        lp.setReferenceId(getField(parts, 4, null));
+        lp.setTimestamp(getField(parts, 5, null));
+        lp.setDescription(getField(parts, 6, null));
         return lp;
+    }
+
+    /** @deprecated Use {@link #fromCsvLine(String)} instead. */
+    @Deprecated
+    public static LoyaltyPointsRecord fromCsv(String csv) {
+        return fromCsvLine(csv);
     }
 
     @Override

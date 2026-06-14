@@ -204,6 +204,61 @@ public final class AuthenticationManager {
     }
 
     /**
+     * Resets the password for a user account if the provided identifier (email or phone number) matches.
+     *
+     * @param username the username
+     * @param identifier the email or phone number
+     * @param newPassword the new password to set
+     * @throws AuthenticationException if the username or identifier is invalid
+     */
+    public void resetPassword(String username, String identifier, String newPassword) {
+        if (username == null || username.trim().isEmpty()) {
+            throw new AuthenticationException("Username cannot be empty");
+        }
+        if (identifier == null || identifier.trim().isEmpty()) {
+            throw new AuthenticationException("Identifier cannot be empty");
+        }
+        if (newPassword == null || newPassword.isEmpty()) {
+            throw new AuthenticationException("New password cannot be empty");
+        }
+
+        if (accountRepository == null) {
+            throw new IllegalStateException("Account repository not configured");
+        }
+
+        UserAccount account = accountRepository.findByUsername(username.trim().toLowerCase());
+        if (account == null) {
+            throw new AuthenticationException(username, "Account not found");
+        }
+
+        Person person = resolvePerson(account.getPersonId(), account.getRole());
+        if (person == null) {
+            throw new AuthenticationException(username, "Person not found for this account");
+        }
+
+        boolean match = false;
+        if (person.getEmail() != null && person.getEmail().equalsIgnoreCase(identifier.trim())) {
+            match = true;
+        } else if (person instanceof Fan) {
+            Fan fan = (Fan) person;
+            if (fan.getPhoneNumber() != null && fan.getPhoneNumber().equals(identifier.trim())) {
+                match = true;
+            }
+        }
+
+        if (!match) {
+            throw new AuthenticationException(username, "Identifier does not match the registered email or phone number");
+        }
+
+        account.setPasswordHash(hashPassword(newPassword));
+        try {
+            accountRepository.save(account);
+        } catch (IOException e) {
+            throw new AuthenticationException(username, "Failed to save new password: " + e.getMessage());
+        }
+    }
+
+    /**
      * Logs out the current session.
      *
      * @param reason the reason for logout

@@ -10,7 +10,7 @@ import java.util.Objects;
  * @version 1.0
  * @since Java 8
  */
-public class CartItem {
+public class CartItem extends BaseEntity {
 
     private static final long serialVersionUID = 1L;
 
@@ -132,7 +132,13 @@ public class CartItem {
         );
     }
 
-    public String toCsv() {
+    @Override
+    public String getEntityId() {
+        return cartItemId;
+    }
+
+    @Override
+    public String toCsvLine() {
         return String.join(",",
             safe(cartItemId),
             safe(fanId),
@@ -146,42 +152,34 @@ public class CartItem {
         );
     }
 
-    private String safe(String s) {
-        if (s == null) return "";
-        return s.contains(",") ? "\"" + s + "\"" : s;
+    /** @deprecated Use {@link #toCsvLine()} instead. */
+    @Deprecated
+    public String toCsv() {
+        return toCsvLine();
     }
 
-    public static CartItem fromCsv(String csv) {
+    public static CartItem fromCsvLine(String csv) {
         if (csv == null || csv.trim().isEmpty()) return null;
         String[] parts = parseCsvLine(csv);
+        if (parts.length < 1) return null;
         CartItem ci = new CartItem();
-        ci.setCartItemId(parts.length > 0 ? parts[0] : null);
-        ci.setFanId(parts.length > 1 ? parts[1] : null);
-        ci.setProductId(parts.length > 2 ? parts[2] : null);
-        ci.setProductName(parts.length > 3 ? parts[3] : null);
-        try { ci.setQuantity(Integer.parseInt(parts.length > 4 ? parts[4] : "1")); } catch (Exception e) { /* default 1 */ }
-        ci.setSize(parts.length > 5 ? parts[5] : null);
-        ci.setColor(parts.length > 6 ? parts[6] : null);
-        try { ci.setUnitPrice(Double.parseDouble(parts.length > 7 ? parts[7] : "0")); } catch (Exception e) { /* default 0 */ }
-        ci.setAddedAt(parts.length > 8 ? parts[8] : null);
+        ci.setCartItemId(getField(parts, 0, null));
+        ci.setFanId(getField(parts, 1, null));
+        ci.setProductId(getField(parts, 2, null));
+        ci.setProductName(getField(parts, 3, null));
+        ci.setQuantity(getIntField(parts, 4, 1));
+        ci.setSize(getField(parts, 5, null));
+        ci.setColor(getField(parts, 6, null));
+        ci.setUnitPrice(getDoubleField(parts, 7, 0.0));
+        ci.setAddedAt(getField(parts, 8, null));
         return ci;
     }
 
-    private static String[] parseCsvLine(String csv) {
-        java.util.List<String> result = new java.util.ArrayList<>();
-        boolean inQuotes = false;
-        StringBuilder current = new StringBuilder();
-        for (char c : csv.toCharArray()) {
-            if (c == '"') {
-                inQuotes = !inQuotes;
-            } else if (c == ',' && !inQuotes) {
-                result.add(current.toString());
-                current = new StringBuilder();
-            } else {
-                current.append(c);
-            }
-        }
-        result.add(current.toString());
-        return result.toArray(new String[0]);
+    /** @deprecated Use {@link #fromCsvLine(String)} instead. */
+    @Deprecated
+    public static CartItem fromCsv(String csv) {
+        return fromCsvLine(csv);
     }
+
+    // parseCsvLine() and safe() are inherited from BaseEntity
 }

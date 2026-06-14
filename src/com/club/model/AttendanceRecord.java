@@ -7,7 +7,7 @@ package com.club.model;
  * @version 1.0
  * @since Java 8
  */
-public class AttendanceRecord {
+public class AttendanceRecord extends BaseEntity {
 
     private static final long serialVersionUID = 1L;
 
@@ -77,29 +77,44 @@ public class AttendanceRecord {
         this.earlyArrival = earlyArrival;
     }
 
-    public String toCsv() {
+    @Override
+    public String getEntityId() {
+        return recordId;
+    }
+
+    @Override
+    public String toCsvLine() {
         return String.join(",",
             safe(recordId), safe(matchId), safe(fanId), safe(seatId),
             safe(entryTime), safe(exitTime), String.valueOf(earlyArrival)
         );
     }
 
-    private String safe(String s) {
-        return s == null ? "" : s.contains(",") ? "\"" + s + "\"" : s;
+    /** @deprecated Use {@link #toCsvLine()} instead. */
+    @Deprecated
+    public String toCsv() {
+        return toCsvLine();
     }
 
-    public static AttendanceRecord fromCsv(String csv) {
+    public static AttendanceRecord fromCsvLine(String csv) {
         if (csv == null || csv.trim().isEmpty()) return null;
-        String[] parts = csv.split(",", -1);
+        String[] parts = parseCsvLine(csv);
+        if (parts.length < 1) return null;
         AttendanceRecord ar = new AttendanceRecord();
-        ar.setRecordId(parts.length > 0 ? parts[0] : null);
-        ar.setMatchId(parts.length > 1 ? parts[1] : null);
-        ar.setFanId(parts.length > 2 ? parts[2] : null);
-        ar.setSeatId(parts.length > 3 ? parts[3] : null);
-        ar.setEntryTime(parts.length > 4 ? parts[4] : null);
-        ar.setExitTime(parts.length > 5 ? parts[5] : null);
-        try { ar.setEarlyArrival(Boolean.parseBoolean(parts.length > 6 ? parts[6] : "false")); } catch (Exception e) { /* default false */ }
+        ar.setRecordId(getField(parts, 0, null));
+        ar.setMatchId(getField(parts, 1, null));
+        ar.setFanId(getField(parts, 2, null));
+        ar.setSeatId(getField(parts, 3, null));
+        ar.setEntryTime(getField(parts, 4, null));
+        ar.setExitTime(getField(parts, 5, null));
+        ar.setEarlyArrival(getBooleanField(parts, 6, false));
         return ar;
+    }
+
+    /** @deprecated Use {@link #fromCsvLine(String)} instead. */
+    @Deprecated
+    public static AttendanceRecord fromCsv(String csv) {
+        return fromCsvLine(csv);
     }
 
     @Override

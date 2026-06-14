@@ -312,7 +312,8 @@ public class Player extends Person {
      *
      * @return comma-separated value string
      */
-    public String toCsv() {
+    @Override
+    public String toCsvLine() {
         return String.join(",",
             safe(id),
             safe(name),
@@ -330,9 +331,10 @@ public class Player extends Person {
         );
     }
 
-    private String safe(String s) {
-        if (s == null) return "";
-        return s.contains(",") ? "\"" + s + "\"" : s;
+    /** @deprecated Use {@link #toCsvLine()} instead. */
+    @Deprecated
+    public String toCsv() {
+        return toCsvLine();
     }
 
     /**
@@ -341,43 +343,31 @@ public class Player extends Person {
      * @param csv the comma-separated line
      * @return a new Player instance
      */
-    public static Player fromCsv(String csv) {
+    public static Player fromCsvLine(String csv) {
         String[] parts = parseCsvLine(csv);
+        if (parts.length < 3) return null;
         Player p = new Player();
         p.setId(parts[0]);
         p.setName(parts[1]);
         p.setEmail(parts[2]);
-        try { p.setPosition(Position.valueOf(parts[3])); } catch (Exception e) { /* default */ }
-        try { p.setSalary(Double.parseDouble(parts[4])); } catch (Exception e) { /* default 0 */ }
-        try { p.setFitness(Integer.parseInt(parts[5])); } catch (Exception e) { /* default 100 */ }
-        try { p.setInjuryStatus(InjuryStatus.valueOf(parts[6])); } catch (Exception e) { /* default healthy */ }
-        try { p.setSquadNumber(Integer.parseInt(parts[7])); } catch (Exception e) { /* default 0 */ }
-        try { p.setMatchesPlayed(Integer.parseInt(parts[8])); } catch (Exception e) { /* default 0 */ }
-        try { p.setGoalsScored(Integer.parseInt(parts[9])); } catch (Exception e) { /* default 0 */ }
-        try { p.setAssists(Integer.parseInt(parts[10])); } catch (Exception e) { /* default 0 */ }
-        p.setJoinDate(parts.length > 11 ? parts[11] : null);
-        p.setContractExpiry(parts.length > 12 ? parts[12] : null);
+        try { p.setPosition(Position.valueOf(getField(parts, 3, "STRIKER"))); } catch (Exception e) { /* default */ }
+        p.setSalary(getDoubleField(parts, 4, 0.0));
+        p.setFitness(getIntField(parts, 5, 100));
+        try { p.setInjuryStatus(InjuryStatus.valueOf(getField(parts, 6, "HEALTHY"))); } catch (Exception e) { /* default */ }
+        p.setSquadNumber(getIntField(parts, 7, 1));
+        p.setMatchesPlayed(getIntField(parts, 8, 0));
+        p.setGoalsScored(getIntField(parts, 9, 0));
+        p.setAssists(getIntField(parts, 10, 0));
+        p.setJoinDate(getField(parts, 11, null));
+        p.setContractExpiry(getField(parts, 12, null));
         return p;
     }
 
-    private static String[] parseCsvLine(String csv) {
-        if (csv == null || csv.trim().isEmpty()) {
-            return new String[13];
-        }
-        java.util.List<String> result = new java.util.ArrayList<>();
-        boolean inQuotes = false;
-        StringBuilder current = new StringBuilder();
-        for (char c : csv.toCharArray()) {
-            if (c == '"') {
-                inQuotes = !inQuotes;
-            } else if (c == ',' && !inQuotes) {
-                result.add(current.toString());
-                current = new StringBuilder();
-            } else {
-                current.append(c);
-            }
-        }
-        result.add(current.toString());
-        return result.toArray(new String[0]);
+    /** @deprecated Use {@link #fromCsvLine(String)} instead. */
+    @Deprecated
+    public static Player fromCsv(String csv) {
+        return fromCsvLine(csv);
     }
+
+    // parseCsvLine() and safe() are inherited from BaseEntity
 }

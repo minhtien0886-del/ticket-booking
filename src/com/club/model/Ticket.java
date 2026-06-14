@@ -11,7 +11,7 @@ import java.util.Objects;
  * @version 1.0
  * @since Java 8
  */
-public class Ticket {
+public class Ticket extends BaseEntity {
 
     private static final long serialVersionUID = 1L;
 
@@ -158,7 +158,13 @@ public class Ticket {
         );
     }
 
-    public String toCsv() {
+    @Override
+    public String getEntityId() {
+        return ticketId;
+    }
+
+    @Override
+    public String toCsvLine() {
         return String.join(",",
             safe(ticketId),
             safe(matchId),
@@ -174,44 +180,36 @@ public class Ticket {
         );
     }
 
-    private String safe(String s) {
-        if (s == null) return "";
-        return s.contains(",") ? "\"" + s + "\"" : s;
+    /** @deprecated Use {@link #toCsvLine()} instead. */
+    @Deprecated
+    public String toCsv() {
+        return toCsvLine();
     }
 
-    public static Ticket fromCsv(String csv) {
+    public static Ticket fromCsvLine(String csv) {
         if (csv == null || csv.trim().isEmpty()) return null;
         String[] parts = parseCsvLine(csv);
+        if (parts.length < 1) return null;
         Ticket t = new Ticket();
-        t.setTicketId(parts.length > 0 ? parts[0] : null);
-        t.setMatchId(parts.length > 1 ? parts[1] : null);
-        t.setFanId(parts.length > 2 ? parts[2] : null);
-        t.setSeatId(parts.length > 3 ? parts[3] : null);
-        try { t.setCategory(TicketCategory.valueOf(parts.length > 4 ? parts[4] : "STANDARD")); } catch (Exception e) { /* default */ }
-        try { t.setPrice(Double.parseDouble(parts.length > 5 ? parts[5] : "0")); } catch (Exception e) { /* default 0 */ }
-        t.setPurchaseDate(parts.length > 6 ? parts[6] : null);
-        t.setMatchDate(parts.length > 7 ? parts[7] : null);
-        try { t.setCheckedIn(Boolean.parseBoolean(parts.length > 8 ? parts[8] : "false")); } catch (Exception e) { /* default false */ }
-        t.setCheckedInTime(parts.length > 9 ? parts[9] : null);
-        t.setTransactionId(parts.length > 10 ? parts[10] : null);
+        t.setTicketId(getField(parts, 0, null));
+        t.setMatchId(getField(parts, 1, null));
+        t.setFanId(getField(parts, 2, null));
+        t.setSeatId(getField(parts, 3, null));
+        try { t.setCategory(TicketCategory.valueOf(getField(parts, 4, "STANDARD"))); } catch (Exception e) { /* default */ }
+        t.setPrice(getDoubleField(parts, 5, 0.0));
+        t.setPurchaseDate(getField(parts, 6, null));
+        t.setMatchDate(getField(parts, 7, null));
+        t.setCheckedIn(getBooleanField(parts, 8, false));
+        t.setCheckedInTime(getField(parts, 9, null));
+        t.setTransactionId(getField(parts, 10, null));
         return t;
     }
 
-    private static String[] parseCsvLine(String csv) {
-        java.util.List<String> result = new java.util.ArrayList<>();
-        boolean inQuotes = false;
-        StringBuilder current = new StringBuilder();
-        for (char c : csv.toCharArray()) {
-            if (c == '"') {
-                inQuotes = !inQuotes;
-            } else if (c == ',' && !inQuotes) {
-                result.add(current.toString());
-                current = new StringBuilder();
-            } else {
-                current.append(c);
-            }
-        }
-        result.add(current.toString());
-        return result.toArray(new String[0]);
+    /** @deprecated Use {@link #fromCsvLine(String)} instead. */
+    @Deprecated
+    public static Ticket fromCsv(String csv) {
+        return fromCsvLine(csv);
     }
+
+    // parseCsvLine() and safe() are inherited from BaseEntity
 }

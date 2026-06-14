@@ -7,7 +7,7 @@ package com.club.model;
  * @version 1.0
  * @since Java 8
  */
-public class SalaryRecord {
+public class SalaryRecord extends BaseEntity {
 
     private static final long serialVersionUID = 1L;
 
@@ -104,7 +104,13 @@ public class SalaryRecord {
         this.status = status;
     }
 
-    public String toCsv() {
+    @Override
+    public String getEntityId() {
+        return recordId;
+    }
+
+    @Override
+    public String toCsvLine() {
         return String.join(",",
             safe(recordId), safe(personId), safe(personType),
             String.valueOf(grossSalary), String.valueOf(deductions),
@@ -113,25 +119,34 @@ public class SalaryRecord {
         );
     }
 
-    private String safe(String s) {
-        return s == null ? "" : s.contains(",") ? "\"" + s + "\"" : s;
+    /** @deprecated Use {@link #toCsvLine()} instead. */
+    @Deprecated
+    public String toCsv() {
+        return toCsvLine();
     }
 
-    public static SalaryRecord fromCsv(String csv) {
+    public static SalaryRecord fromCsvLine(String csv) {
         if (csv == null || csv.trim().isEmpty()) return null;
-        String[] parts = csv.split(",", -1);
+        String[] parts = parseCsvLine(csv);
+        if (parts.length < 1) return null;
         SalaryRecord sr = new SalaryRecord();
-        sr.setRecordId(parts.length > 0 ? parts[0] : null);
-        sr.setPersonId(parts.length > 1 ? parts[1] : null);
-        sr.setPersonType(parts.length > 2 ? parts[2] : null);
-        try { sr.setGrossSalary(Double.parseDouble(parts.length > 3 ? parts[3] : "0")); } catch (Exception e) { /* default 0 */ }
-        try { sr.setDeductions(Double.parseDouble(parts.length > 4 ? parts[4] : "0")); } catch (Exception e) { /* default 0 */ }
-        try { sr.setNetSalary(Double.parseDouble(parts.length > 5 ? parts[5] : "0")); } catch (Exception e) { /* default 0 */ }
-        sr.setPayPeriod(parts.length > 6 ? parts[6] : null);
-        sr.setPaymentDate(parts.length > 7 ? parts[7] : null);
-        sr.setProcessedBy(parts.length > 8 ? parts[8] : null);
-        sr.setStatus(parts.length > 9 ? parts[9] : null);
+        sr.setRecordId(getField(parts, 0, null));
+        sr.setPersonId(getField(parts, 1, null));
+        sr.setPersonType(getField(parts, 2, null));
+        sr.setGrossSalary(getDoubleField(parts, 3, 0.0));
+        sr.setDeductions(getDoubleField(parts, 4, 0.0));
+        sr.setNetSalary(getDoubleField(parts, 5, 0.0));
+        sr.setPayPeriod(getField(parts, 6, null));
+        sr.setPaymentDate(getField(parts, 7, null));
+        sr.setProcessedBy(getField(parts, 8, null));
+        sr.setStatus(getField(parts, 9, null));
         return sr;
+    }
+
+    /** @deprecated Use {@link #fromCsvLine(String)} instead. */
+    @Deprecated
+    public static SalaryRecord fromCsv(String csv) {
+        return fromCsvLine(csv);
     }
 
     @Override

@@ -17,7 +17,7 @@ import java.util.Objects;
  * @see Role
  * @see AccountStatus
  */
-public class UserAccount {
+public class UserAccount extends BaseEntity {
 
     private static final long serialVersionUID = 1L;
 
@@ -223,7 +223,13 @@ public class UserAccount {
         );
     }
 
-    public String toCsv() {
+    @Override
+    public String getEntityId() {
+        return username;
+    }
+
+    @Override
+    public String toCsvLine() {
         return String.join(",",
             safe(username),
             safe(passwordHash),
@@ -236,41 +242,33 @@ public class UserAccount {
         );
     }
 
-    private String safe(String s) {
-        if (s == null) return "";
-        return s.contains(",") ? "\"" + s + "\"" : s;
+    /** @deprecated Use {@link #toCsvLine()} instead. */
+    @Deprecated
+    public String toCsv() {
+        return toCsvLine();
     }
 
-    public static UserAccount fromCsv(String csv) {
+    public static UserAccount fromCsvLine(String csv) {
         if (csv == null || csv.trim().isEmpty()) return null;
         String[] parts = parseCsvLine(csv);
+        if (parts.length < 1) return null;
         UserAccount ua = new UserAccount();
         ua.setUsername(parts[0]);
-        ua.setPasswordHash(parts.length > 1 ? parts[1] : "");
-        try { ua.setRole(Role.valueOf(parts.length > 2 ? parts[2] : "FAN")); } catch (Exception e) { /* default */ }
-        try { ua.setStatus(AccountStatus.valueOf(parts.length > 3 ? parts[3] : "ACTIVE")); } catch (Exception e) { /* default */ }
-        ua.setLastLogin(parts.length > 4 ? parts[4] : null);
-        try { ua.setFailedLoginAttempts(Integer.parseInt(parts.length > 5 ? parts[5] : "0")); } catch (Exception e) { /* default 0 */ }
-        ua.setCreatedAt(parts.length > 6 ? parts[6] : null);
-        ua.setPersonId(parts.length > 7 ? parts[7] : null);
+        ua.setPasswordHash(getField(parts, 1, ""));
+        try { ua.setRole(Role.valueOf(getField(parts, 2, "FAN"))); } catch (Exception e) { /* default */ }
+        try { ua.setStatus(AccountStatus.valueOf(getField(parts, 3, "ACTIVE"))); } catch (Exception e) { /* default */ }
+        ua.setLastLogin(getField(parts, 4, null));
+        ua.setFailedLoginAttempts(getIntField(parts, 5, 0));
+        ua.setCreatedAt(getField(parts, 6, null));
+        ua.setPersonId(getField(parts, 7, null));
         return ua;
     }
 
-    private static String[] parseCsvLine(String csv) {
-        java.util.List<String> result = new java.util.ArrayList<>();
-        boolean inQuotes = false;
-        StringBuilder current = new StringBuilder();
-        for (char c : csv.toCharArray()) {
-            if (c == '"') {
-                inQuotes = !inQuotes;
-            } else if (c == ',' && !inQuotes) {
-                result.add(current.toString());
-                current = new StringBuilder();
-            } else {
-                current.append(c);
-            }
-        }
-        result.add(current.toString());
-        return result.toArray(new String[0]);
+    /** @deprecated Use {@link #fromCsvLine(String)} instead. */
+    @Deprecated
+    public static UserAccount fromCsv(String csv) {
+        return fromCsvLine(csv);
     }
+
+    // parseCsvLine() and safe() are inherited from BaseEntity
 }
