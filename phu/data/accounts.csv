@@ -1,0 +1,7 @@
+username,passwordHash,role,status,lastLogin,failedLoginAttempts,createdAt,personId
+commentator,8RBZ62+85iZV371vg7iWcA==:njm1duv1ETQgwqvZAGu1m5H/fyU7lATVdec8lg8QhdI=,TRONG_TAI,ACTIVE,,0,commentator_id,
+manager,5DwIT0u7K/GDne5GbYUstQ==:91BVhFKVwl8MJjHhlc2Q95KknTOzszZbQUfHxDe9XHA=,QUAN_LY_QUAY,ACTIVE,,0,manager_id,
+admin,NZ1BuveK/g3hu+euKMBFDA==:q6J5RuyLtJN9O/nHKeefqDniWXrajNDCLw+UVrRG4H4=,ADMIN,ACTIVE,,0,admin_id,
+coach,vmphqpoMYRe9Z0Pn3JeFcw==:BHuse7rPwJIbWUxzT+0lpPuHpRUlAMQVP4Kp7vtrgzA=,HLV_TRUONG,ACTIVE,,0,coach_id,
+hr_director,mY5oXohcs2H4bJdGIL6/sA==:6gD6EyUCe0r4hyzAGC5TD6SHHRiPtpP7es5T3ocVolk=,GIAM_DOC_NHAN_SU,ACTIVE,,0,hr_id,
+finance_director,EQCydlRXGMMPQGzI46GI/w==:gyZBBSyhodJ3X6KhZS1E5OLuu1VZKbpR7FJhIg88ARA=,GIAM_DOC_TAI_CHINH,ACTIVE,2026-07-09T21:06:15.310711100,0,finance_id,

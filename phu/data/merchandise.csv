@@ -1,0 +1,122 @@
+productId,name,description,category,basePrice,size,color,stockQuantity,active,imageUrl
+PROD_0001,Away Jersey 2026 v2,Official Away Jersey 2026 v2 - Premium quality,SCARF,234.47,M,Green,106,true,/img/PROD_0001.jpg
+PROD_0002,Third Kit 2026 v3,Official Third Kit 2026 v3 - Premium quality,CAP,180.51,S,Blue,472,true,/img/PROD_0002.jpg
+PROD_0003,Club Scarf v4,Official Club Scarf v4 - Premium quality,JACKET,202.97,ONE_SIZE,Blue,283,true,/img/PROD_0003.jpg
+PROD_0004,Club Cap v5,Official Club Cap v5 - Premium quality,TICKET_PACKAGE,232.75,S,Green,440,true,/img/PROD_0004.jpg
+PROD_0005,Club Jacket v1,Official Club Jacket v1 - Premium quality,FOOTBALL,215.25,XL,White,13,true,/img/PROD_0005.jpg
+PROD_0006,Training Shirt v2,Official Training Shirt v2 - Premium quality,FLAG,163.07,XL,Green,197,true,/img/PROD_0006.jpg
+PROD_0007,Official Match Ball v3,Official Official Match Ball v3 - Premium quality,MUG,57.72,XL,Green,15,true,/img/PROD_0007.jpg
+PROD_0008,Club Flag v4,Official Club Flag v4 - Premium quality,KEYCHAIN,84.81,XL,Blue,24,true,/img/PROD_0008.jpg
+PROD_0009,Club Mug v5,Official Club Mug v5 - Premium quality,TRAINING_GEAR,121.76,M,White,248,true,/img/PROD_0009.jpg
+PROD_0010,Keychain Set v1,Official Keychain Set v1 - Premium quality,KIT,231.14,ONE_SIZE,Blue,381,true,/img/PROD_0010.jpg
+PROD_0011,Home Shorts v2,Official Home Shorts v2 - Premium quality,FOOTWEAR,277.34,M,Blue,26,true,/img/PROD_0011.jpg
+PROD_0012,Training Pants v3,Official Training Pants v3 - Premium quality,ACCESSORIES,117.09,M,Red,231,false,/img/PROD_0012.jpg
+PROD_0013,Stadium Blanket v4,Official Stadium Blanket v4 - Premium quality,JERSEY,241.39,XL,Red,136,false,/img/PROD_0013.jpg
+PROD_0014,Signed Jersey v5,Official Signed Jersey v5 - Premium quality,SCARF,148.76,XL,Green,217,true,/img/PROD_0014.jpg
+PROD_0015,Home Jersey 2026 v1,Official Home Jersey 2026 v1 - Premium quality,CAP,255.25,ONE_SIZE,White,474,true,/img/PROD_0015.jpg
+PROD_0016,Away Jersey 2026 v2,Official Away Jersey 2026 v2 - Premium quality,JACKET,39.24,M,Blue,213,false,/img/PROD_0016.jpg
+PROD_0017,Third Kit 2026 v3,Official Third Kit 2026 v3 - Premium quality,TICKET_PACKAGE,251.72,M,Black,276,true,/img/PROD_0017.jpg
+PROD_0018,Club Scarf v4,Official Club Scarf v4 - Premium quality,FOOTBALL,114.60,M,Green,137,true,/img/PROD_0018.jpg
+PROD_0019,Club Cap v5,Official Club Cap v5 - Premium quality,FLAG,57.39,L,White,193,true,/img/PROD_0019.jpg
+PROD_0020,Club Jacket v1,Official Club Jacket v1 - Premium quality,MUG,274.63,M,Red,241,true,/img/PROD_0020.jpg
+PROD_0021,Training Shirt v2,Official Training Shirt v2 - Premium quality,KEYCHAIN,175.12,M,Red,455,true,/img/PROD_0021.jpg
+PROD_0022,Official Match Ball v3,Official Official Match Ball v3 - Premium quality,TRAINING_GEAR,175.63,XL,Red,284,true,/img/PROD_0022.jpg
+PROD_0023,Club Flag v4,Official Club Flag v4 - Premium quality,KIT,208.19,L,Blue,415,true,/img/PROD_0023.jpg
+PROD_0024,Club Mug v5,Official Club Mug v5 - Premium quality,FOOTWEAR,83.39,XL,Blue,228,true,/img/PROD_0024.jpg
+PROD_0025,Keychain Set v1,Official Keychain Set v1 - Premium quality,ACCESSORIES,62.38,XL,Blue,211,true,/img/PROD_0025.jpg
+PROD_0026,Home Shorts v2,Official Home Shorts v2 - Premium quality,JERSEY,238.00,L,Red,284,true,/img/PROD_0026.jpg
+PROD_0027,Training Pants v3,Official Training Pants v3 - Premium quality,SCARF,114.93,ONE_SIZE,White,71,true,/img/PROD_0027.jpg
+PROD_0028,Stadium Blanket v4,Official Stadium Blanket v4 - Premium quality,CAP,104.14,XL,Red,423,true,/img/PROD_0028.jpg
+PROD_0029,Signed Jersey v5,Official Signed Jersey v5 - Premium quality,JACKET,118.32,S,Green,201,true,/img/PROD_0029.jpg
+PROD_0030,Home Jersey 2026 v1,Official Home Jersey 2026 v1 - Premium quality,TICKET_PACKAGE,56.92,L,Blue,280,true,/img/PROD_0030.jpg
+PROD_0031,Away Jersey 2026 v2,Official Away Jersey 2026 v2 - Premium quality,FOOTBALL,22.42,S,Blue,37,true,/img/PROD_0031.jpg
+PROD_0032,Third Kit 2026 v3,Official Third Kit 2026 v3 - Premium quality,FLAG,26.55,XL,Red,205,true,/img/PROD_0032.jpg
+PROD_0033,Club Scarf v4,Official Club Scarf v4 - Premium quality,MUG,45.75,S,Green,398,true,/img/PROD_0033.jpg
+PROD_0034,Club Cap v5,Official Club Cap v5 - Premium quality,KEYCHAIN,194.85,M,Red,177,true,/img/PROD_0034.jpg
+PROD_0035,Club Jacket v1,Official Club Jacket v1 - Premium quality,TRAINING_GEAR,59.26,XL,Black,342,true,/img/PROD_0035.jpg
+PROD_0036,Training Shirt v2,Official Training Shirt v2 - Premium quality,KIT,258.54,S,Red,367,true,/img/PROD_0036.jpg
+PROD_0037,Official Match Ball v3,Official Official Match Ball v3 - Premium quality,FOOTWEAR,117.87,XL,Blue,461,true,/img/PROD_0037.jpg
+PROD_0038,Club Flag v4,Official Club Flag v4 - Premium quality,ACCESSORIES,90.34,XL,Blue,243,false,/img/PROD_0038.jpg
+PROD_0039,Club Mug v5,Official Club Mug v5 - Premium quality,JERSEY,98.14,M,Green,161,true,/img/PROD_0039.jpg
+PROD_0040,Keychain Set v1,Official Keychain Set v1 - Premium quality,SCARF,193.26,L,Black,82,true,/img/PROD_0040.jpg
+PROD_0041,Home Shorts v2,Official Home Shorts v2 - Premium quality,CAP,54.52,ONE_SIZE,Green,68,true,/img/PROD_0041.jpg
+PROD_0042,Training Pants v3,Official Training Pants v3 - Premium quality,JACKET,116.56,L,Red,291,true,/img/PROD_0042.jpg
+PROD_0043,Stadium Blanket v4,Official Stadium Blanket v4 - Premium quality,TICKET_PACKAGE,288.50,ONE_SIZE,White,308,true,/img/PROD_0043.jpg
+PROD_0044,Signed Jersey v5,Official Signed Jersey v5 - Premium quality,FOOTBALL,171.05,L,White,471,true,/img/PROD_0044.jpg
+PROD_0045,Home Jersey 2026 v1,Official Home Jersey 2026 v1 - Premium quality,FLAG,225.22,S,Blue,30,true,/img/PROD_0045.jpg
+PROD_0046,Away Jersey 2026 v2,Official Away Jersey 2026 v2 - Premium quality,MUG,144.45,L,White,255,true,/img/PROD_0046.jpg
+PROD_0047,Third Kit 2026 v3,Official Third Kit 2026 v3 - Premium quality,KEYCHAIN,185.92,S,Black,164,true,/img/PROD_0047.jpg
+PROD_0048,Club Scarf v4,Official Club Scarf v4 - Premium quality,TRAINING_GEAR,98.57,ONE_SIZE,Red,45,true,/img/PROD_0048.jpg
+PROD_0049,Club Cap v5,Official Club Cap v5 - Premium quality,KIT,295.54,L,Green,446,false,/img/PROD_0049.jpg
+PROD_0050,Club Jacket v1,Official Club Jacket v1 - Premium quality,FOOTWEAR,219.61,M,Red,56,true,/img/PROD_0050.jpg
+PROD_0051,Training Shirt v2,Official Training Shirt v2 - Premium quality,ACCESSORIES,54.59,S,Red,454,false,/img/PROD_0051.jpg
+PROD_0052,Official Match Ball v3,Official Official Match Ball v3 - Premium quality,JERSEY,213.14,S,Blue,439,true,/img/PROD_0052.jpg
+PROD_0053,Club Flag v4,Official Club Flag v4 - Premium quality,SCARF,113.64,S,Black,109,false,/img/PROD_0053.jpg
+PROD_0054,Club Mug v5,Official Club Mug v5 - Premium quality,CAP,164.29,XL,White,132,true,/img/PROD_0054.jpg
+PROD_0055,Keychain Set v1,Official Keychain Set v1 - Premium quality,JACKET,54.36,ONE_SIZE,Blue,62,true,/img/PROD_0055.jpg
+PROD_0056,Home Shorts v2,Official Home Shorts v2 - Premium quality,TICKET_PACKAGE,79.35,S,White,270,true,/img/PROD_0056.jpg
+PROD_0057,Training Pants v3,Official Training Pants v3 - Premium quality,FOOTBALL,21.65,S,Green,52,true,/img/PROD_0057.jpg
+PROD_0058,Stadium Blanket v4,Official Stadium Blanket v4 - Premium quality,FLAG,282.61,XL,Red,58,true,/img/PROD_0058.jpg
+PROD_0059,Signed Jersey v5,Official Signed Jersey v5 - Premium quality,MUG,231.15,XL,Red,254,true,/img/PROD_0059.jpg
+PROD_0060,Home Jersey 2026 v1,Official Home Jersey 2026 v1 - Premium quality,KEYCHAIN,281.38,M,Black,374,true,/img/PROD_0060.jpg
+PROD_0061,Away Jersey 2026 v2,Official Away Jersey 2026 v2 - Premium quality,TRAINING_GEAR,42.55,XL,Black,64,true,/img/PROD_0061.jpg
+PROD_0062,Third Kit 2026 v3,Official Third Kit 2026 v3 - Premium quality,KIT,206.22,L,Red,71,true,/img/PROD_0062.jpg
+PROD_0063,Club Scarf v4,Official Club Scarf v4 - Premium quality,FOOTWEAR,266.90,M,Blue,63,true,/img/PROD_0063.jpg
+PROD_0064,Club Cap v5,Official Club Cap v5 - Premium quality,ACCESSORIES,198.44,M,Red,72,true,/img/PROD_0064.jpg
+PROD_0065,Club Jacket v1,Official Club Jacket v1 - Premium quality,JERSEY,295.93,ONE_SIZE,White,449,true,/img/PROD_0065.jpg
+PROD_0066,Training Shirt v2,Official Training Shirt v2 - Premium quality,SCARF,243.57,L,White,171,true,/img/PROD_0066.jpg
+PROD_0067,Official Match Ball v3,Official Official Match Ball v3 - Premium quality,CAP,136.42,M,Black,203,true,/img/PROD_0067.jpg
+PROD_0068,Club Flag v4,Official Club Flag v4 - Premium quality,JACKET,224.21,M,Blue,131,true,/img/PROD_0068.jpg
+PROD_0069,Club Mug v5,Official Club Mug v5 - Premium quality,TICKET_PACKAGE,285.04,XL,Red,449,true,/img/PROD_0069.jpg
+PROD_0070,Keychain Set v1,Official Keychain Set v1 - Premium quality,FOOTBALL,39.82,S,Black,97,true,/img/PROD_0070.jpg
+PROD_0071,Home Shorts v2,Official Home Shorts v2 - Premium quality,FLAG,16.24,XL,Blue,304,true,/img/PROD_0071.jpg
+PROD_0072,Training Pants v3,Official Training Pants v3 - Premium quality,MUG,20.00,ONE_SIZE,Green,135,true,/img/PROD_0072.jpg
+PROD_0073,Stadium Blanket v4,Official Stadium Blanket v4 - Premium quality,KEYCHAIN,269.65,ONE_SIZE,Green,450,true,/img/PROD_0073.jpg
+PROD_0074,Signed Jersey v5,Official Signed Jersey v5 - Premium quality,TRAINING_GEAR,167.73,L,Red,186,true,/img/PROD_0074.jpg
+PROD_0075,Home Jersey 2026 v1,Official Home Jersey 2026 v1 - Premium quality,KIT,42.88,M,Green,424,true,/img/PROD_0075.jpg
+PROD_0076,Away Jersey 2026 v2,Official Away Jersey 2026 v2 - Premium quality,FOOTWEAR,285.25,ONE_SIZE,Green,293,false,/img/PROD_0076.jpg
+PROD_0077,Third Kit 2026 v3,Official Third Kit 2026 v3 - Premium quality,ACCESSORIES,73.76,S,Black,93,true,/img/PROD_0077.jpg
+PROD_0078,Club Scarf v4,Official Club Scarf v4 - Premium quality,JERSEY,23.31,XL,Blue,100,true,/img/PROD_0078.jpg
+PROD_0079,Club Cap v5,Official Club Cap v5 - Premium quality,SCARF,88.91,XL,Green,199,true,/img/PROD_0079.jpg
+PROD_0080,Club Jacket v1,Official Club Jacket v1 - Premium quality,CAP,264.53,XL,Red,166,true,/img/PROD_0080.jpg
+PROD_0081,Training Shirt v2,Official Training Shirt v2 - Premium quality,JACKET,157.21,ONE_SIZE,Blue,389,true,/img/PROD_0081.jpg
+PROD_0082,Official Match Ball v3,Official Official Match Ball v3 - Premium quality,TICKET_PACKAGE,195.67,M,Red,294,true,/img/PROD_0082.jpg
+PROD_0083,Club Flag v4,Official Club Flag v4 - Premium quality,FOOTBALL,240.42,XL,Green,233,true,/img/PROD_0083.jpg
+PROD_0084,Club Mug v5,Official Club Mug v5 - Premium quality,FLAG,154.99,S,Red,108,true,/img/PROD_0084.jpg
+PROD_0085,Keychain Set v1,Official Keychain Set v1 - Premium quality,MUG,266.73,ONE_SIZE,Green,93,true,/img/PROD_0085.jpg
+PROD_0086,Home Shorts v2,Official Home Shorts v2 - Premium quality,KEYCHAIN,100.23,ONE_SIZE,Black,25,true,/img/PROD_0086.jpg
+PROD_0087,Training Pants v3,Official Training Pants v3 - Premium quality,TRAINING_GEAR,80.27,ONE_SIZE,Blue,72,true,/img/PROD_0087.jpg
+PROD_0088,Stadium Blanket v4,Official Stadium Blanket v4 - Premium quality,KIT,298.94,ONE_SIZE,Green,21,true,/img/PROD_0088.jpg
+PROD_0089,Signed Jersey v5,Official Signed Jersey v5 - Premium quality,FOOTWEAR,158.58,S,White,108,true,/img/PROD_0089.jpg
+PROD_0090,Home Jersey 2026 v1,Official Home Jersey 2026 v1 - Premium quality,ACCESSORIES,189.86,M,White,297,true,/img/PROD_0090.jpg
+PROD_0091,Away Jersey 2026 v2,Official Away Jersey 2026 v2 - Premium quality,JERSEY,91.47,L,White,288,true,/img/PROD_0091.jpg
+PROD_0092,Third Kit 2026 v3,Official Third Kit 2026 v3 - Premium quality,SCARF,153.80,L,Green,23,true,/img/PROD_0092.jpg
+PROD_0093,Club Scarf v4,Official Club Scarf v4 - Premium quality,CAP,43.49,ONE_SIZE,White,444,true,/img/PROD_0093.jpg
+PROD_0094,Club Cap v5,Official Club Cap v5 - Premium quality,JACKET,47.12,M,Blue,54,true,/img/PROD_0094.jpg
+PROD_0095,Club Jacket v1,Official Club Jacket v1 - Premium quality,TICKET_PACKAGE,61.54,S,Red,204,true,/img/PROD_0095.jpg
+PROD_0096,Training Shirt v2,Official Training Shirt v2 - Premium quality,FOOTBALL,123.59,XL,Black,412,true,/img/PROD_0096.jpg
+PROD_0097,Official Match Ball v3,Official Official Match Ball v3 - Premium quality,FLAG,181.30,L,Green,118,true,/img/PROD_0097.jpg
+PROD_0098,Club Flag v4,Official Club Flag v4 - Premium quality,MUG,70.73,ONE_SIZE,Black,72,true,/img/PROD_0098.jpg
+PROD_0099,Club Mug v5,Official Club Mug v5 - Premium quality,KEYCHAIN,253.94,L,White,390,true,/img/PROD_0099.jpg
+PROD_0100,Keychain Set v1,Official Keychain Set v1 - Premium quality,TRAINING_GEAR,130.64,XL,Black,90,true,/img/PROD_0100.jpg
+PROD_0101,Home Shorts v2,Official Home Shorts v2 - Premium quality,KIT,22.88,ONE_SIZE,Green,161,true,/img/PROD_0101.jpg
+PROD_0102,Training Pants v3,Official Training Pants v3 - Premium quality,FOOTWEAR,151.71,XL,Black,60,true,/img/PROD_0102.jpg
+PROD_0103,Stadium Blanket v4,Official Stadium Blanket v4 - Premium quality,ACCESSORIES,210.76,M,Blue,303,true,/img/PROD_0103.jpg
+PROD_0104,Signed Jersey v5,Official Signed Jersey v5 - Premium quality,JERSEY,110.86,ONE_SIZE,Green,11,false,/img/PROD_0104.jpg
+PROD_0105,Home Jersey 2026 v1,Official Home Jersey 2026 v1 - Premium quality,SCARF,215.88,XL,White,18,true,/img/PROD_0105.jpg
+PROD_0106,Away Jersey 2026 v2,Official Away Jersey 2026 v2 - Premium quality,CAP,140.15,L,Blue,37,true,/img/PROD_0106.jpg
+PROD_0107,Third Kit 2026 v3,Official Third Kit 2026 v3 - Premium quality,JACKET,146.57,ONE_SIZE,Blue,164,false,/img/PROD_0107.jpg
+PROD_0108,Club Scarf v4,Official Club Scarf v4 - Premium quality,TICKET_PACKAGE,208.97,ONE_SIZE,Blue,297,true,/img/PROD_0108.jpg
+PROD_0109,Club Cap v5,Official Club Cap v5 - Premium quality,FOOTBALL,167.51,M,Red,283,true,/img/PROD_0109.jpg
+PROD_0110,Club Jacket v1,Official Club Jacket v1 - Premium quality,FLAG,141.66,S,Blue,346,true,/img/PROD_0110.jpg
+PROD_0111,Training Shirt v2,Official Training Shirt v2 - Premium quality,MUG,157.54,XL,Blue,40,true,/img/PROD_0111.jpg
+PROD_0112,Official Match Ball v3,Official Official Match Ball v3 - Premium quality,KEYCHAIN,97.07,L,White,225,false,/img/PROD_0112.jpg
+PROD_0113,Club Flag v4,Official Club Flag v4 - Premium quality,TRAINING_GEAR,129.86,L,Blue,167,true,/img/PROD_0113.jpg
+PROD_0114,Club Mug v5,Official Club Mug v5 - Premium quality,KIT,21.47,S,Blue,452,false,/img/PROD_0114.jpg
+PROD_0115,Keychain Set v1,Official Keychain Set v1 - Premium quality,FOOTWEAR,120.90,M,White,423,false,/img/PROD_0115.jpg
+PROD_0116,Home Shorts v2,Official Home Shorts v2 - Premium quality,ACCESSORIES,53.33,XL,Red,226,true,/img/PROD_0116.jpg
+PROD_0117,Training Pants v3,Official Training Pants v3 - Premium quality,JERSEY,195.45,ONE_SIZE,Blue,448,true,/img/PROD_0117.jpg
+PROD_0118,Stadium Blanket v4,Official Stadium Blanket v4 - Premium quality,SCARF,261.87,S,Black,19,true,/img/PROD_0118.jpg
+PROD_0119,Signed Jersey v5,Official Signed Jersey v5 - Premium quality,CAP,184.32,ONE_SIZE,White,146,true,/img/PROD_0119.jpg
+PROD_0120,Home Jersey 2026 v1,Official Home Jersey 2026 v1 - Premium quality,JACKET,178.76,ONE_SIZE,White,310,false,/img/PROD_0120.jpg
+
